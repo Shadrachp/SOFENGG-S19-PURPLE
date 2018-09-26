@@ -6,8 +6,16 @@
   "scripts": {
     "start": "electron ."
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shadrachp/SOFENGG-S19-PURPLE.git"
+  },
   "author": "llyme, shadrachp, RaphZap",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Shadrachp/SOFENGG-S19-PURPLE/issues"
+  },
+  "homepage": "https://github.com/Shadrachp/SOFENGG-S19-PURPLE#readme",
   "dependencies": {
     "electron": "^3.0.0"
   }

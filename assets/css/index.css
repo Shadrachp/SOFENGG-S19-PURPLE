@@ -1,0 +1,56 @@
+* {
+	font-family: calibri;
+}
+
+body {
+	background-color: #f1f1f2;
+}
+
+#pword {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 240px;
+	padding: 8px 10px;
+	border: none;
+	border-radius: 18px;
+	line-height: 20px;
+	font-size: 15px;
+	box-shadow: 0 0 1px #000;
+	transform: translate(-50%, -50%);
+	transition: all 0.2s;
+}
+
+#pword:focus {
+	outline: none;
+	box-shadow: 0 0 6px #000;
+}
+
+#acept {
+	position: absolute;
+	top: 50%;
+	left: calc(50% + 112px);
+	width: 36px;
+	height: 36px;
+	border: none;
+	border-radius: 50%;
+	box-shadow: 0 0 2px #000;
+	background-color: #fff;
+	transition: all 0.2s;
+	cursor: pointer;
+	transform: translate(-50%, -50%);
+}
+
+#acept:hover {
+	box-shadow: 0 0 6px #000;
+}
+
+#acept:focus {
+	outline: none;
+}
+
+#acept:active {
+	background-color: #a1a1a2;
+	box-shadow: 0 0 1px #000;
+	transition: all 0.1s;
+}

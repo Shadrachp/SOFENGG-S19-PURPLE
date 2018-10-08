@@ -2,10 +2,90 @@
 <html>
 <head>
 	<link rel=stylesheet href=../css/index.css>
+	<script src=../js/qTiny.js></script>
+	<script src=../js/vergil.js></script>
 </head>
 <body>
-	<input id=pword type=password placeholder=Password>
-	<img id=acept src=../img/login.png draggable=false>
+	<div id=login><div>
+		<label>Uy's Law Firm</label>
+		<input id=login_user type=text placeholder=Username>
+		<input id=login_pwrd type=password placeholder=Password>
+		<button id=login_acpt>Login</button>
+	</div></div>
+
+	<!-- Design section. Non-functional stuff goes here. Basically
+		anything that only makes the GUI look good goes here. -->
+	<div id=design>
+		<div id=design_panel0></div>
+	</div>
+
+	<!-- Workspace section. Everything else goes here. -->
+	<div id=space>
+		<div id=client>
+			<input id=client_search
+				type=text
+				placeholder=Search
+				input_text="0">
+			<img id=client_new
+				src=../img/client_new.png
+				draggable=false>
+			<div id=client_space>
+			</div>
+		</div>
+
+		<!-- All work logs for the currently selected client. -->
+		<div id=log>
+			<!-- This is where the logs will be created through the
+				app. -->
+			<div id=log_input>
+				<label id=log_input_date_label>Date <smaller>MM/DD/YYYY</smaller></label>
+				<input id=log_input_date
+					type=text
+					input_text="0">
+				<label id=log_input_code_label>Code</label>
+				<input id=log_input_code
+					type=text
+					input_text="0">
+				<label id=log_input_duration_label>Time <smaller>HH:MM</smaller></label>
+				<input id=log_input_duration
+					type=text
+					placeholder=00:00
+					input_text="0">
+				<label id=log_input_lawyer_label>Handling Lawyer</label>
+				<input id=log_input_lawyer
+					type=text
+					input_text="0">
+				<label id=log_input_desc_label>Description</label>
+				<div id=log_input_desc
+					contenteditable=true
+					input_text="0"></div>
+				<div id=log_input_ctrl>
+					<button id=log_input_ctrl_bill
+						button="0">Billing</button>
+					<button id=log_input_ctrl_pref
+						button="0">Preferences</button>
+					<button id=log_input_ctrl_submit
+						button="0">Create Log</button>
+				</div>
+			</div>
+
+			<!-- All created logs will be shown here. -->
+			<div id=log_space></div>
+		</div>
+	</div>
+
+	<div id=client_new_popup invisible>
+		<dim></dim>
+		<div>
+			<label>New Client</label>
+			<input id=client_new_popup_input type=text placeholder=Name input_text=0>
+			<button id=client_new_popup_cancel button=0>Cancel</button>
+			<button id=client_new_popup_create button=0>Create</button>
+		</div>
+	</div>
+
+	<!-- Script section. Make sure to put scripts here so
+		that the elements are loaded before doing anything. -->
 	<script src=../js/index.js></script>
 </body>
 </html>

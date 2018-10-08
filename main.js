@@ -1,6 +1,7 @@
 const {app, BrowserWindow, session} = require("electron");
-const url = require('url');
-const path = require('path');
+const url = require("url");
+const path = require("path");
+const crypto = require("crypto");
 
 function init() {
 	// Clear up cache to prevent bloating.
@@ -8,20 +9,25 @@ function init() {
 	session.defaultSession.clearCache(_ => _);
 	session.defaultSession.clearHostResolverCache();
 
-	//Create a new window
+	// Create a new window.
 	let win = new BrowserWindow({
-		title: "A Very Nice Title" // You can set the title here as well.
+		width: 700,
+		height: 640,
+		minWidth: 700,
+		minHeight: 480,
+		title: "A Very Nice Title" // You can set the title here too.
 	});
 
-	// This will disable the menu bar, though it gets disabled automatically
-	// in deployment anyway.
+	// This will disable the menu bar, though it gets disabled
+	// automatically in deployment anyway.
 	// win.setMenu(null);
 
-	//Load view into the window
-	win.loadFile("assets/html/root.html");
+	// Load view into the window.
+	win.loadFile("assets/html/index.html");
 
 	// We need the menu bar for testing. We'll use this later.
 	// setMenu(menu);
+	//win.setMenu(null);
 
 	// This will unassign the object and be garbage-collected.
 	win.on("closed", () => win = null);

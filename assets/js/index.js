@@ -277,6 +277,8 @@ log_input_ctrl_submit.addEventListener("click", _ => {
 function clear_log_input(){
     clear_input(log_input_date);
     clear_input(log_input_code);
+    clear_input(log_input_duration);
+    clear_input(log_input_lawyer);
     clear_input(log_input_desc);
 }
 

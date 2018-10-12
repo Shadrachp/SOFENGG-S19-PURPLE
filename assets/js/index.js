@@ -259,20 +259,43 @@ log_input_ctrl_submit.addEventListener("click", _ => {
 			"placeholder",
 			new Date().toLocaleDateString()
 		);
-
-		fn_log_space_data_new(
-			var_log_space_list[var_client_selected].log_space_data,
-			log_input_date.value ||
-				log_input_date.getAttribute("placeholder"),
-			log_input_code.value,
-			log_input_duration.value ||
-				log_input_duration.getAttribute("placeholder"),
-			log_input_lawyer.value,
-			log_input_desc.innerText
-		);
+        
+        if(isInputValid(log_input_lawyer.value) && isInteger(log_input_code.value))
+            fn_log_space_data_new(
+                var_log_space_list[var_client_selected].log_space_data,
+                log_input_date.value ||
+                    log_input_date.getAttribute("placeholder"),
+                log_input_code.value,
+                log_input_duration.value ||
+                    log_input_duration.getAttribute("placeholder"),
+                log_input_lawyer.value,
+                log_input_desc.innerText
+            );
+//        else vergil(!isInputValid(log_input_lawyer.value) ? 
+//                    "Invalid characters found for handling lawyer field!"
+//                    : !isInputValid(log_input_code.value) ? 
+//                      "Invalid characters found for code field!");
         clear_log_input();
 	}
 });
+
+/**
+ * Checks string if it only contains letters
+ * @param {string} str - The string to be checked.
+ * @returns {boolean} 'true' if string only contains letters, otherwise 'false'.
+**/
+function isInputValid(str){
+    return /^[a-zA-Z]+$/.test(str);
+}
+
+/**
+ * Checks string if it only contains digits
+ * @param {string} str - The string to be checked.
+ * @returns {boolean} 'true' if string only contains digits/numbers, otherwise 'false'.
+**/
+function isInteger(str){
+    return /^\d+$/.test(str);
+}
 
 function clear_log_input(){
     clear_input(log_input_date);

@@ -135,9 +135,10 @@ client_new.addEventListener("click", _ =>
 
 //-- Setup `client_new_popup` functions. --//
 
-client_new_popup_cancel.addEventListener("click", _ =>
-	client_new_popup.setAttribute("invisible", 1)
-);
+client_new_popup_cancel.addEventListener("click", _ =>{
+	client_new_popup.setAttribute("invisible", 1);
+    clear_input(client_new_popup_input);
+});
 
 client_new_popup_create.addEventListener("click", _ => {
 	if (fn_client_space_new(client_new_popup_input.value)) {
@@ -149,6 +150,7 @@ client_new_popup_create.addEventListener("click", _ => {
 		"That client's name is already taken..." :
 		"Please input a name for your client."
 	);
+    clear_input(client_new_popup_input);
 });
 
 
@@ -268,8 +270,20 @@ log_input_ctrl_submit.addEventListener("click", _ => {
 			log_input_lawyer.value,
 			log_input_desc.innerText
 		);
+        clear_log_input();
 	}
 });
+
+function clear_log_input(){
+    clear_input(log_input_date);
+    clear_input(log_input_code);
+    clear_input(log_input_desc);
+}
+
+function clear_input(e) {
+   if(e.tagName.toLowerCase()  === "input") e.value = '';
+   else if(e.tagName.toLowerCase() == "div")  e.innerText = '';
+}
 
 {
 	let div = q("#log_space !div");

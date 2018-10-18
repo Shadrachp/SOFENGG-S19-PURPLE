@@ -1,10 +1,17 @@
-/* A very 'ver'gilant message system.
-*/
+/**
+ * A very 'vergil'ant message system.
+ *
+ * (Just search for the function name to see the documentation.)
+ *
+ * Functions:
+ * - vergil()
+ *
+ * @author Llyme
+**/
 
 {
 	let v = document.createElement("style");
 	v.innerHTML = `
-
 @keyframes vergil_anim {
 	0% {
 		opacity: 0;
@@ -45,9 +52,16 @@
 	document.head.appendChild(v);
 }
 
-
+/**
+ * Creates a notification at the top of the screen that will disappear
+ * for a set amount of time or when the user clicks on it. The
+ * notification's lifespan is reset when the user hovers over it.
+ * @param {String} txt - The text for the notification.
+ * @param {Number} lifespan - Time in milliseconds before the
+ * notification will automatically disappear.
+**/
 const vergil = (txt, lifespan) => {
-	lifespan = lifespan || 3000;
+	lifespan = lifespan ? lifespan : 3000;
 
 	let v = document.createElement("_");
 	v.className = "vergil";
@@ -65,7 +79,7 @@ const vergil = (txt, lifespan) => {
 	let d = _ => {
 		d = null;
 		let i = vergil.dump.indexOf(key);
-		console.log(i)
+
 		for (let n = i-1; n >= 0; n--) {
 			vergil.dump[n][0] -= v.clientHeight + 8;
 			vergil.dump[n][1].style.top = vergil.dump[n][0] + "px";

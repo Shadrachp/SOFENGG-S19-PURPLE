@@ -2,25 +2,35 @@
 <html>
 <head>
 	<link rel=stylesheet href=../css/index.css>
-	<script src=../js/qTiny.js></script>
-	<script src=../js/vergil.js></script>
+	<script src=../js/spook.js></script>
 </head>
 <body>
 	<div id=login><div>
 		<label>Uy's Law Firm</label>
-		<input id=login_user type=text placeholder=Username>
-		<input id=login_pwrd type=password placeholder=Password>
-		<button id=login_acpt>Login</button>
+		<input id=login_user
+			type=text
+			placeholder=Username
+			input_text="0">
+		<input id=login_pwrd
+			type=password
+			placeholder=Password
+			input_text="0">
+		<button id=login_acpt button="0">Login</button>
 	</div></div>
-
-	<!-- Design section. Non-functional stuff goes here. Basically
-		anything that only makes the GUI look good goes here. -->
-	<div id=design>
-		<div id=design_panel0></div>
-	</div>
 
 	<!-- Workspace section. Everything else goes here. -->
 	<div id=space>
+		<!-- All work logs for the currently selected client. -->
+		<div id=log>
+			<div id=log_ctrl invisible>
+				<button id=log_ctrl_new button="0">New Log</button>
+				<button id=log_ctrl_sort button="0" hidden>Sort by Date</button>
+			</div>
+		</div>
+
+		<label id=space_empty>There's nothing here...<br><small>Start by creating a new client!</small><br><smaller>Click the glowing button at the top-left corner to start.</smaller></label>
+
+		<!-- A list of all created clients. -->
 		<div id=client>
 			<input id=client_search
 				type=text
@@ -28,59 +38,101 @@
 				input_text="0">
 			<img id=client_new
 				src=../img/client_new.png
-				draggable=false>
-			<div id=client_space>
+				draggable=false
+				button="1"
+				glow>
+			<div id=client_space scroll=0>
 			</div>
 		</div>
 
-		<!-- All work logs for the currently selected client. -->
-		<div id=log>
-			<!-- This is where the logs will be created through the
-				app. -->
-			<div id=log_input>
-				<label id=log_input_date_label>Date <smaller>MM/DD/YYYY</smaller></label>
-				<input id=log_input_date
-					type=text
-					input_text="0">
-				<label id=log_input_code_label>Code</label>
-				<input id=log_input_code
-					type=text
-					input_text="0">
-				<label id=log_input_duration_label>Time <smaller>HH:MM</smaller></label>
-				<input id=log_input_duration
-					type=text
-					placeholder=00:00
-					input_text="0">
-				<label id=log_input_lawyer_label>Handling Lawyer</label>
-				<input id=log_input_lawyer
-					type=text
-					input_text="0">
-				<label id=log_input_desc_label>Description</label>
-				<div id=log_input_desc
-					contenteditable=true
-					input_text="0"></div>
-				<div id=log_input_ctrl>
-					<button id=log_input_ctrl_bill
-						button="0">Billing</button>
-					<button id=log_input_ctrl_pref
-						button="0">Preferences</button>
-					<button id=log_input_ctrl_submit
-						button="0">Create Log</button>
+		<!-- The currently selected client's information. -->
+		<div id=info>
+			<div id=info_div invisible>
+				<label id=info_name></label>
+				<div id=info_stats>
+					<label>Accumulated Time</label>
+					<label id=info_stats_time></label>
+					<label>Total Logs</label>
+					<label id=info_stats_log></label>
+				</div>
+				<div id=info_ctrl hidden>
+					<button id=info_ctrl_bill button="0">Billing</button>
+					<button id=info_ctrl_pref button="0">Preferences</button>
 				</div>
 			</div>
-
-			<!-- All created logs will be shown here. -->
-			<div id=log_space></div>
 		</div>
 	</div>
 
-	<div id=client_new_popup invisible>
+	<!-- This is where the logs will be created through the app. -->
+	<div id=log_popup invisible>
+		<dim></dim>
+		<div>
+			<label id=log_popup_date_label>Date <small style=color:var(--info);>MM/DD/YYYY</small></label>
+			<input id=log_popup_date
+				type=text
+				input_text="0">
+			<label id=log_popup_start_label>Time Start <small style=color:var(--info);>HH:MM</small></label>
+			<input id=log_popup_start
+				type=text
+				placeholder="12:00 AM"
+				input_text="0">
+			<label id=log_popup_end_label>Time End <small style=color:var(--info);>HH:MM</small></label>
+			<input id=log_popup_end
+				type=text
+				placeholder="11:59 PM"
+				input_text="0">
+			<label id=log_popup_lawyer_label>Handling Lawyer</label>
+			<input id=log_popup_lawyer
+				type=text
+				input_text="0">
+			<label id=log_popup_code_label>Code</label>
+			<div id=log_popup_code
+				scroll="0"><label contenteditable=true></label></div>
+			<label id=log_popup_desc_label>Description</label>
+			<div id=log_popup_desc
+				contenteditable=true
+				input_text="0"
+				scroll="0"></div>
+			<div id=log_popup_ctrl>
+				<button id=log_popup_ctrl_cancel
+					button="0">Cancel</button>
+				<button id=log_popup_ctrl_submit
+					button="0">Submit</button>
+			</div>
+		</div>
+	</div>
+
+	<div id=client_popup invisible>
 		<dim></dim>
 		<div>
 			<label>New Client</label>
-			<input id=client_new_popup_input type=text placeholder=Name input_text=0>
-			<button id=client_new_popup_cancel button=0>Cancel</button>
-			<button id=client_new_popup_create button=0>Create</button>
+			<input id=client_popup_input type=text placeholder=Name input_text=0>
+			<button id=client_popup_cancel button=0>Cancel</button>
+			<button id=client_popup_create button=0>Create</button>
+		</div>
+	</div>
+
+	<div id=log_new_popup invisible>
+		<dim></dim>
+		<div>
+			<label>There are entries missing in your log!<br><small>Do you still want to continue?</small></label>
+			<label id=log_new_popup_label></label>
+			<button id=log_new_popup_cancel button=0>Cancel</button>
+			<button id=log_new_popup_submit button=0>Submit</button>
+		</div>
+	</div>
+
+	<div id=pref_popup invisible>
+		<dim></dim>
+		<div scroll="0">
+			<label class=pref_popup_label>Client Name</label>
+			<input id=pref_popup_name type=text input_text="0">
+			<label class=pref_popup_label>Billing Button Visibility</label>
+			<checkbox id=pref_popup_hide checkbox="0" active=1></checkbox>
+			<img id=pref_popup_close src=../img/close_small.png draggable=false>
+			<!-- <sep></sep>
+			<button id=pref_popup_clear button="0">Clear This Client's Log</button>
+			<button id=pref_popup_danger button="0">Delete This Client</button> -->
 		</div>
 	</div>
 

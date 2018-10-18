@@ -11,33 +11,31 @@ function init() {
 
 	// Create a new window.
 	let win = new BrowserWindow({
-		width: 700,
+		width: 800,
 		height: 640,
-		minWidth: 700,
-		minHeight: 480,
+		minWidth: 800,
+		minHeight: 640,
 		title: "A Very Nice Title" // You can set the title here too.
 	});
-
-	// This will disable the menu bar, though it gets disabled
-	// automatically in deployment anyway.
-	// win.setMenu(null);
 
 	// Load view into the window.
 	win.loadFile("assets/html/index.html");
 
 	// We need the menu bar for testing. We'll use this later.
+	// This will disable the menu bar, though it gets disabled
+	// automatically in deployment anyway.
 	// setMenu(menu);
 	//win.setMenu(null);
 
 	// This will unassign the object and be garbage-collected.
-	win.on("closed", () => win = null);
+	win.on("closed", _ => win = null);
 }
 
 /**
  * Replaces the current menu bar of the app 
  * @param menu - an array of dropdown menus
 **/
-function setMenu(menuBar){
+function setMenu(menuBar) {
     Menu.setApplicationMenu(Menu.buildFromTemplate(menuBar));
 };
 

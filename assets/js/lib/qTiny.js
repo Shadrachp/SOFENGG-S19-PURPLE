@@ -1,4 +1,14 @@
-// Tiny jQuery. Faster way to do JS things, without jQuery.
+/**
+ * Tiny jQuery. Faster way to do JS things, without jQuery.
+ *
+ * @author Llyme
+**/
+
+/**
+ * Make HTML things!
+ * @param {String} v - string pattern (exact same thing as jQuery).
+ * @return {HTMLElement | Array[HTMLElement]} the filtered elements.
+**/
 const q = v => {
 	let t = 1;
 	v = v.split(" ");

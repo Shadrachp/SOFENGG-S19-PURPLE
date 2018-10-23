@@ -79,7 +79,7 @@ log_popup_ctrl_cancel.addEventListener("click", _ => {
 // User clicked the log creation interface's submit button.
 log_popup_ctrl_submit.addEventListener("click", _ => {
 	let l = [
-		_ => mod_lawyer.list[log_popup_lawyer.value],
+		_ => mod_lawyer.list[log_popup_lawyer.value.toLowerCase()],
 		_ => log_popup_code.getElementsByTagName("label").length > 1,
 		_ => log_popup_desc.innerText.search(/\S/) > -1
 	];
@@ -88,11 +88,21 @@ log_popup_ctrl_submit.addEventListener("click", _ => {
 		.filter((v, i) => !l[i]())
 		.join("<br>");
 
-	if (txt) {
-		log_new_popup_label.innerHTML = txt;
-		log_new_popup.removeAttribute("invisible");
-	} else
+	if (txt.length)
+		vergil(
+			"<div style=color:var(--warning);text-align:left;>" +
+			"Please fill up the entire form.<br><small>" + txt +
+			"</small></div>",
+			2600
+		);
+	else
 		mod_log_popup.new();
+
+	// if (txt) {
+	// 	log_new_popup_label.innerHTML = txt;
+	// 	log_new_popup.removeAttribute("invisible");
+	// } else
+	// 	mod_log_popup.new();
 });
 
 log_popup_date.addEventListener("focus", _ => {
@@ -288,8 +298,8 @@ log_popup_code.addEventListener("focusout", event => {
 
 	if (event.target.innerText.search(/\S/) > -1) {
 		let l = log_popup_code.getElementsByTagName("div");
-		event.target.innerHTML =
-			event.target.innerText.replace(/\D/g, "");
+		// event.target.innerHTML =
+		// 	event.target.innerText.replace(/\S/g, "");
 		event.target.removeAttribute("contenteditable");
 		event.target.addEventListener(
 			"click",

@@ -43,6 +43,13 @@ const mod_info = {
 		info_stats_time.innerHTML =
 			time ? mod_info.stats_time_convert(time) : "N/A";
 	},
+	/**
+	 * Update the information interface's total logs based on given
+	 * list.
+	 *
+	 * @param {Array} String - The list of all the logs created on
+	 * a client.
+	**/
 	stats_log_update: list => {
 		info_stats_log.innerHTML =
 			list.length ? list.length + " Log" +

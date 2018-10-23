@@ -7,22 +7,36 @@
 {
 	let accept = _ => {
 		// Hard-coded, for now.
-		if (!login_user.value)
-			return vergil (
+		if (!login_user.value && !login_pwrd.value)
+			return vergil(
 				"<div style=color:var(--warning)>" +
 				"Please input username and password." +
 				"</div>",
 				1800
 			);
+		else if (!login_user.value)
+			return vergil(
+				"<div style=color:var(--warning)>" +
+				"Please input the username." +
+				"</div>",
+				1800
+			);
+		else if (!login_pwrd.value)
+			return vergil(
+				"<div style=color:var(--warning)>" +
+				"Please input the password." +
+				"</div>",
+				1800
+			);
 		else if (login_user.value != "admin")
-			return vergil (
+			return vergil(
 				"<div style=color:var(--warning)>" +
 				"Username does not exist!" +
 				"</div>",
 				1800
 			);
 		else if (login_pwrd.value != "1234")
-			return vergil (
+			return vergil(
 				"<div style=color:var(--warning)>" +
 				"Incorrect password!" +
 				"</div>",

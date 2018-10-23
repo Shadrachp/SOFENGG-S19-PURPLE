@@ -1,6 +1,6 @@
 /**
  * A very spooky, sneaky, scary skeletal framework. The backbone
- * overlord of the modules.
+ * overlord of the modules and libraries.
  *
  * @author Llyme
 **/

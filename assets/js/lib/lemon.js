@@ -46,12 +46,12 @@ const lemon = {
 					);
 
 				time = time.substr(i + 1);
-
 				i = time.search(/\D/);
 
-				let mn = Math.max(0,
-						Math.min(59, Number(time.substr(0, i)))
-					);
+				let mn = Math.max(0, Math.min(59, Number(time.substr(
+						0,
+						i == -1 ? undefined : i
+					))));
 
 				if (time.toUpperCase().indexOf("PM") > -1) {
 					if (hr != 12)

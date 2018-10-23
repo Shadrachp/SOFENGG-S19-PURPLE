@@ -15,7 +15,7 @@ function init() {
 		height: 640,
 		minWidth: 800,
 		minHeight: 640,
-		title: "A Very Nice Title" // You can set the title here too.
+		title: "Uy's Law Firm" // You can set the title here too.
 	});
 
 	// Load view into the window.

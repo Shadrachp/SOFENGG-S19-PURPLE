@@ -20,37 +20,34 @@ log_popup_lawyer.addEventListener("focus", _ => {
 		"<div style=color:var(--info);text-align:center;>" +
 		"Add This Lawyer" +
 		"</div>";
+	let l = mod_lawyer.list[" "];
 	let add;
 
+	if (!mod_lawyer.list[log_popup_lawyer.value.toLowerCase()]) {
+		add = 1;
+		l = l.map(v => v);
+		l.unshift(txt);
+	}
+
 	let fn = _ => {
+		let key = log_popup_lawyer.value.toLowerCase();
 		let l = mod_lawyer.list[" "].filter(
-			v => v.toUpperCase().indexOf(
-				log_popup_lawyer.value.toUpperCase()
-			) != -1
+			v => v.toLowerCase().indexOf(key) != -1
 		);
 
-		add = !mod_lawyer.list[log_popup_lawyer.value];
+		add = !mod_lawyer.list[key];
 
 		if (add) l.unshift(txt);
 
 		return l;
 	};
 
-	let l;
-
-	if (mod_lawyer.list[log_popup_lawyer.value])
-		l = mod_lawyer.list[" "];
-	else {
-		add = 1;
-		l = mod_lawyer.list[" "].map(v => v);
-		l.unshift(txt);
-	}
-
 	let update_fn;
 	let update = drool.list(
 		log_popup_lawyer,
 		l,
 		(v, i) => {
+			console.log(v)
 			if (!i && add) {
 				if (log_popup_lawyer.value.search(/\S/) == -1)
 					return vergil(
@@ -59,7 +56,12 @@ log_popup_lawyer.addEventListener("focus", _ => {
 						"</div>"
 					);
 
-				mod_lawyer.list[log_popup_lawyer.value] = [];
+				// Use lowercase version as key/index.
+				let key = log_popup_lawyer.value.toLowerCase();
+				mod_lawyer.list[key] = [];
+				// Store real name inside.
+				mod_lawyer.list[key].name = log_popup_lawyer.value;
+				// Dump name to collection.
 				mod_lawyer.list[" "].push(log_popup_lawyer.value);
 
 				vergil(
@@ -85,6 +87,6 @@ log_popup_lawyer.addEventListener("focus", _ => {
 
 // User blurs focus from the lawyer input.
 log_popup_lawyer.addEventListener("blur", _ => {
-	if (!mod_lawyer.list[log_popup_lawyer.value])
+	if (!mod_lawyer.list[log_popup_lawyer.value.toLowerCase()])
 		log_popup_lawyer.value = "";
 });

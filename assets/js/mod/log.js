@@ -6,6 +6,9 @@
 **/
 
 const mod_log = {
+	/* All the created logs are stored here. The 'key/index' is the
+	   client's lowercased name.
+	*/
 	space_list: {},
 	/**
 	 * Create a new entry (GUI and data) for the client's log

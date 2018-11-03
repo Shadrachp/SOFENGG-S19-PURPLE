@@ -82,3 +82,5 @@ const q = v => {
 
 	return t;
 };
+
+spook.return();

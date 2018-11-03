@@ -29,7 +29,7 @@
 	top: 8px;
 	left: 50%;
 	min-width: 160px;
-	max-width: 320px;
+	max-width: 640px;
 	padding: 16px 32px;
 	border-radius: 16px;
 	background-color: #fff;
@@ -110,3 +110,5 @@ const vergil = (txt, lifespan) => {
 };
 
 vergil.dump = [];
+
+spook.return();

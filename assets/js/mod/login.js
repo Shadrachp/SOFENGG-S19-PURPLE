@@ -57,3 +57,5 @@
 	login_pwrd.addEventListener("keydown", input);
 	login_acpt.addEventListener("click", accept);
 }
+
+spook.return();

@@ -36,6 +36,10 @@
  *   }
  *
  * I'VE DONE EVERYTHING! HOW DO I CONNECT/LOAD IT TO THE APPLICATION?
+ * - Before closing that nice looking module/library you got, make sure
+ *   there's a "spook.return()" at the very bottom of it. This will
+ *   give `spook.js` a signal that your module/library has finished
+ *   loading.
  * - Neat! in the `index.js` you'll see the keyword `spook`. They're
  *   the ones loading modules/libraries into the framework. Just
  *   put your modules/libraries in one of them and make sure it has
@@ -59,12 +63,12 @@ spook.load([
 	"lib/tipper",
 	"lib/vergil",
 	"lib/drool",
-	"lib/viscount",
-	"lib/fridge"
+	"lib/viscount"
 ]);
 
 // Modules `assets/js/mod`.
 spook.load([
+	"mod/relay",
 	"mod/checkbox",
 	"mod/client",
 	"mod/client_popup",
@@ -73,5 +77,9 @@ spook.load([
 	"mod/log",
 	"mod/log_popup",
 	"mod/login",
-	"mod/pref_popup"
+	"mod/pref_popup",
+	"mod/preload",
+	"mod/sebastian" // Keep `sebastian.js` at the bottom.
 ]);
+
+spook.done();

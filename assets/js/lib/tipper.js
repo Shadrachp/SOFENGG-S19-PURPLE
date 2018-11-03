@@ -98,3 +98,5 @@ tipper.div = document.createElement("_");
 tipper.div.className = "tipper";
 
 document.addEventListener("mousemove", tipper.move);
+
+spook.return();

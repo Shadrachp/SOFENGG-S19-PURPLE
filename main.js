@@ -1,7 +1,18 @@
-const {app, BrowserWindow, session} = require("electron");
-const url = require("url");
-const path = require("path");
-const crypto = require("crypto");
+const fs = require("fs");
+const {ipcMain, app, BrowserWindow, session} = require("electron");
+
+// Check if the directory exists.
+try {
+	fs.accessSync("mongodbdata");
+} catch (_) {
+	fs.mkdirSync("mongodbdata");
+}
+
+const spook = require("./assets/js/spook.js"); // The spooky framework.
+
+
+
+//-- Setup Electron Main Process --//
 
 function init() {
 	// Clear up cache to prevent bloating.
@@ -31,31 +42,51 @@ function init() {
 	win.on("closed", _ => win = null);
 }
 
-/**
- * Replaces the current menu bar of the app 
- * @param menu - an array of dropdown menus
-**/
-function setMenu(menuBar) {
-    Menu.setApplicationMenu(Menu.buildFromTemplate(menuBar));
-};
+if (!app.requestSingleInstanceLock())
+	// Close this app if there's already an open instance.
+	app.quit();
+else {
+	app.on("second-instance", _ => {
+		let l = BrowserWindow.getAllWindows();
 
-// Creates the menu bar which contains an array of dropdown menus.
-const menu = [
-    {
-        label: 'Settings'
-    },
-];
+		// Check if there's at least 1 existing window.
+		if (l.length) {
+			// Show the first one to the user.
+			if (l[0].isMinimized())
+				l[0].restore();
 
-// Listen for app to be ready.
-app.on("ready", init);
+			l[0].focus();
+		}
+	});
 
-/* This will allow the app to shutdown properly.
-   Electron can make background processes and
-   can possibly prevent the app to close.
-*/
-app.on("window-all-closed", _ =>
-	process.platform !== "darwin" && app.quit()
-);
+	// Listen for app to be ready.
+	app.on("ready", init);
 
-// The 'ready' event for MacOS.
-app.on("activate", init);
+	/* This will allow the app to shutdown properly.
+	   Electron can make background processes and
+	   can possibly prevent the app to close.
+	*/
+	app.on("window-all-closed", _ =>
+		process.platform !== "darwin" && app.quit()
+	);
+
+	// The 'ready' event for MacOS.
+	app.on("activate", init);
+
+
+
+
+	//-- Melee Initialization --//
+
+	// Wait for all the children (AKA modules) to load.
+	spook.waitForChildren(_ => {
+		spook.database.connect("mongodb://localhost:27017/UysLawFirm",
+			_ => {
+				// Broadcast that we have connected to the database.
+				BrowserWindow.getAllWindows().map(v =>
+					v.webContents.send("database_connected", true)
+				);
+			}
+		);
+	});
+}

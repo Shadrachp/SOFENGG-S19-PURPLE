@@ -10,7 +10,7 @@
  * @param {Integer | null} i - if provided with an existing ID, it will
  * remove that ID from that list and allow usage when this function is
  * called again. Leaving it `null` or empty will generate a new ID.
- * Lowest unused ID number is prioritized when generating a number.
+ * Earliest unused ID number is prioritized when generating a number.
 **/
 const viscount = i => {
 	if (i == null)
@@ -18,13 +18,15 @@ const viscount = i => {
 			viscount.lo.pop() :
 			viscount.hi++;
 	else (
-		i >= viscount.hi ? (
+		i < viscount.hi ? (
 			i < viscount.hi - 1 ?
 			viscount.lo.push(i) :
 			viscount.hi--
-		) : 0
+		) : null
 	);
 };
 
 viscount.hi = 0;
 viscount.lo = [];
+
+spook.return();

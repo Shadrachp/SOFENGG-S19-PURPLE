@@ -4,14 +4,12 @@
  * @author Llyme
  * @dependencies vergil.js, log.js, drool.js
 **/
-
 const mod_lawyer = {
 	/* List of created lawyers. The 'key/index' is the lawyer, while
 	   the value is the list of logs that the lawyer is involved with.
 	*/
 	list: []
 };
-
 mod_lawyer.list[" "] = [];
 
 // User focused on the lawyer input.
@@ -47,7 +45,6 @@ log_popup_lawyer.addEventListener("focus", _ => {
 		log_popup_lawyer,
 		l,
 		(v, i) => {
-			console.log(v)
 			if (!i && add) {
 				if (log_popup_lawyer.value.search(/\S/) == -1)
 					return vergil(
@@ -90,3 +87,5 @@ log_popup_lawyer.addEventListener("blur", _ => {
 	if (!mod_lawyer.list[log_popup_lawyer.value.toLowerCase()])
 		log_popup_lawyer.value = "";
 });
+
+spook.return();

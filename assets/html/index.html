@@ -5,18 +5,22 @@
 	<script src=../js/spook.js></script>
 </head>
 <body>
-	<div id=login><div>
-		<label>Uy's Law Firm</label>
-		<input id=login_user
-			type=text
-			placeholder=Username
-			input_text="0">
-		<input id=login_pwrd
-			type=password
-			placeholder=Password
-			input_text="0">
-		<button id=login_acpt button="0">Login</button>
-	</div></div>
+	<div id=login>
+		<div>
+			<label>Uy's Law Firm</label>
+			<input id=login_user
+				type=text
+				placeholder=Username
+				input_text="0"
+				value="admin">
+			<input id=login_pwrd
+				type=password
+				placeholder=Password
+				input_text="0"
+				value="1234">
+			<button id=login_acpt button="0">Login</button>
+		</div>
+	</div>
 
 	<!-- Workspace section. Everything else goes here. -->
 	<div id=space>
@@ -41,8 +45,7 @@
 				draggable=false
 				button="1"
 				glow>
-			<div id=client_space scroll=0>
-			</div>
+			<div id=client_space scroll=0></div>
 		</div>
 
 		<!-- The currently selected client's information. -->
@@ -55,8 +58,8 @@
 					<label>Total Logs</label>
 					<label id=info_stats_log></label>
 				</div>
-				<div id=info_ctrl hidden>
-					<button id=info_ctrl_bill button="0">Billing</button>
+				<div id=info_ctrl>
+					<button id=info_ctrl_bill button="0" hidden>Billing</button>
 					<button id=info_ctrl_pref button="0">Preferences</button>
 				</div>
 			</div>
@@ -133,6 +136,15 @@
 			<!-- <sep></sep>
 			<button id=pref_popup_clear button="0">Clear This Client's Log</button>
 			<button id=pref_popup_danger button="0">Delete This Client</button> -->
+		</div>
+	</div>
+
+	<!-- Preloading screen. We show this to the user if the system
+		 is still loading. -->
+	<div id=preload>
+		<div>
+			<label id=preload_header>Hold on...</label>
+			<label id=preload_sub>Arranging the archives...</label>
 		</div>
 	</div>
 

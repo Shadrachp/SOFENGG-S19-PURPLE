@@ -4,47 +4,46 @@
  * @author Llyme
  * @dependencies vergil.js, log.js, drool.js, lemon.js
 **/
+const mod_log_popup = {};
 
-const mod_log_popup = {
-	/** A proxy that feeds input through all constraints for creating a
-	 * new log. Use this instead of 'mod_log.space_new'.
-	**/
-	new: _ => {
-		// Make sure there's actually a selected client to save to.
-		if (!mod_client.selected)
-			return;
+/** A proxy that feeds input through all constraints for creating a
+ * new log. Use this instead of 'mod_log.space_new'.
+**/
+mod_log_popup.new = _ => {
+	// Make sure there's actually a selected client to save to.
+	if (!mod_client.selected)
+		return;
 
-		log_popup_date.setAttribute(
-			"placeholder",
-			new Date().toLocaleDateString()
-		);
-
-
-		// Extract and convert code into array.
-		let code = [];
-		let l = log_popup_code.getElementsByTagName("label");
-
-		for (let i = 0; i < l.length; i++)
-			if (!l[i].getAttribute("contenteditable") &&
-				l[i].innerText.search(/\S/) > -1)
-				code.push(l[i].innerText);
+	log_popup_date.setAttribute(
+		"placeholder",
+		new Date().toLocaleDateString()
+	);
 
 
-		// Create log.
-		mod_log.space_new(
-			mod_client.selected,
-			log_popup_date.value ||
-				log_popup_date.getAttribute("placeholder"),
-			code.length ? code : null,
-			log_popup_start.value ||
-				log_popup_start.getAttribute("placeholder"),
-			log_popup_end.value ||
-				log_popup_end.getAttribute("placeholder"),
-			log_popup_lawyer.value,
-			log_popup_desc.innerText
-		);
-	}
-}
+	// Extract and convert code into array.
+	let code = [];
+	let l = log_popup_code.getElementsByTagName("label");
+
+	for (let i = 0; i < l.length; i++)
+		if (!l[i].getAttribute("contenteditable") &&
+			l[i].innerText.search(/\S/) > -1)
+			code.push(l[i].innerText);
+
+
+	// Create log.
+	mod_log.space_new(
+		mod_client.selected,
+		log_popup_date.value ||
+			log_popup_date.getAttribute("placeholder"),
+		code.length ? code : null,
+		log_popup_start.value ||
+			log_popup_start.getAttribute("placeholder"),
+		log_popup_end.value ||
+			log_popup_end.getAttribute("placeholder"),
+		log_popup_lawyer.value,
+		log_popup_desc.innerText
+	);
+};
 
 log_ctrl_new.addEventListener("click", _ => {
 	// Reset everything before revealing.
@@ -138,7 +137,7 @@ log_popup_date.setAttribute(
 	new Date().toLocaleDateString()
 );
 
-{
+spook.waitForChildren(_ => {
 	/* Constraints used to make sure that `time start` does not go
 	   higher than `time end`, and vice-versa.
 	*/
@@ -231,7 +230,7 @@ log_popup_date.setAttribute(
 			elm.value = l[2](elm.value, l[n]);
 		});
 	});
-}
+});
 
 log_popup_code.addEventListener("input", event => {
 	if (event.data == null &&
@@ -321,3 +320,5 @@ log_new_popup_submit.addEventListener("click", _ => {
 	log_new_popup.setAttribute("invisible", 1);
 	mod_log_popup.new();
 });
+
+spook.return();

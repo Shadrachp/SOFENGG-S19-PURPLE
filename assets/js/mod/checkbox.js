@@ -5,7 +5,7 @@
  * @dependencies qTiny.js
 **/
 
-{
+spook.waitForChildren(_ => {
 	let l = q("checkbox");
 
 	for (let i = 0; i < l.length; i++) {
@@ -17,4 +17,6 @@
 			event.target.setAttribute("active", 1)
 		));
 	}
-}
+});
+
+spook.return();

@@ -60,7 +60,8 @@ spook.load([
 	"lib/vergil",
 	"lib/drool",
 	"lib/viscount",
-	"lib/fridge"
+	"lib/fridge",
+    "lib/html2canvas.min"
 ]);
 
 // Modules `assets/js/mod`.
@@ -73,5 +74,6 @@ spook.load([
 	"mod/log",
 	"mod/log_popup",
 	"mod/login",
-	"mod/pref_popup"
+	"mod/pref_popup",
+    "mod/capture"
 ]);

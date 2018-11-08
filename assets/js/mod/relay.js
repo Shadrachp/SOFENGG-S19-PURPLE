@@ -46,15 +46,46 @@ const mod_relay = {
 	   do something like `mod_relay.Client.new(..)(Function callback)`.
 	   The first `()` is where you put the data you will be sending.
 	   The second `()` is the `send` function containing the callback.
+	   See `assets/main/models` for more details as to what properties
+	   can be found in each model.
 	*/
 	const models = {
+		User: [
+			/**
+			 * Create a new user document.
+			 *
+			 * send():
+			 * @param Object properties - properties necessary to make
+			 * a new document.
+			 *
+			 * callback():
+			 * @param Boolean flag - successful if `true`, or
+			 * invalid if `false`.
+			**/
+			"new",
+			/**
+			 * See if there's an existing document with the given
+			 * arguments.
+			 *
+			 * send():
+			 * @param String username - the username.
+			 * @param String password - the password. This is
+			 * automatically hashed.
+			 *
+			 * callback():
+			 * @param Integer flag - 0 = No such username;
+			 * 1 = Incorrect password;
+			 * 2 = Found username and correct password.
+			**/
+			"get"
+		],
 		Client: [
 			/**
 			 * Create a new client document.
 			 *
 			 * send():
 			 * @param Object properties - properties necessary to make
-			 * a new client document.
+			 * a new document.
 			 *
 			 * callback():
 			 * @param Boolean|null flag - successful if `true`,

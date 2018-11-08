@@ -7,6 +7,7 @@
  * @author Llyme
 **/
 const {ipcMain, BrowserWindow} = require("electron");
+const crypto = require("crypto");
 const spook = require("../spook.js");
 const database = require("./database.js");
 
@@ -31,8 +32,7 @@ ipcMain.on("database_connected", event => {
  *
  * Pre-defined arguments (starting from the left):
  *
- * @param EventEmitter event - everything about the conversation is
- * in here.
+ * @param EventEmitter event - most of the conversation is in here.
  *
  * @param Integer id - unique number for each conversation between the
  * the main process and the renderer process. The uniqueness is only
@@ -46,13 +46,55 @@ ipcMain.on("database_connected", event => {
  * THE DOCUMENTATION IS AT THE RENDERER-SIDE `mod/relay.js`. GO THERE.
 */
 let filter = {
+	User: {
+		new: (event, id, properties, channel) => {
+			spook.models.User.findOne({
+				username: properties.username
+			}).then(doc => {
+				if (!doc) {
+					properties.password =
+						crypto.createHash("sha256")
+						.update(properties.password).digest("hex");
+
+					spook.models.User.new(properties, doc =>
+						event.sender.send(
+							channel,
+							id,
+							doc ? true : false
+						)
+					);
+				} else
+					event.sender.send(channel, id, false);
+			});
+		},
+		get: (event, id, username, password, channel) => {
+			spook.models.User.findOne({
+				username
+			}).then(doc =>
+				event.sender.send(
+					channel,
+					id,
+					doc ? (
+						doc.password == crypto.createHash("sha256")
+						.update(password).digest("hex") ?
+						2 : // Correct username and password.
+						1 // Incorrect password.
+					) : 0 // No such username.
+				)
+			);
+		}
+	},
 	Client: {
 		new: (event, id, properties, channel) =>
 			spook.models.Client.findOne({name: properties.name})
 			.then(doc => {
 				if (!doc)
 					spook.models.Client.new(properties, doc =>
-						event.sender.send(channel, id, true)
+						event.sender.send(
+							channel,
+							id,
+							doc ? true : false
+						)
 					);
 				else
 					event.sender.send(channel, id, false);

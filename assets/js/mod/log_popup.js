@@ -312,13 +312,4 @@ log_popup_code.addEventListener("focusout", event => {
 		event.target.innerHTML = "";
 });
 
-log_new_popup_cancel.addEventListener("click", _ =>
-	log_new_popup.setAttribute("invisible", 1)
-);
-
-log_new_popup_submit.addEventListener("click", _ => {
-	log_new_popup.setAttribute("invisible", 1);
-	mod_log_popup.new();
-});
-
 spook.return();

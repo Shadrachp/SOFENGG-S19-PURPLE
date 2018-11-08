@@ -97,27 +97,17 @@ if ((_ => { try { return !!document } catch(_) { } })()) {
 	spook.waitForChildren = callback => queue.push(callback);
 
 	// Load everything in the `main` folder (non-recursive).
-	require("fs").readdir("./assets/js/main", (err, files) => {
-		if (err)
-			return;
-
-		files.map(v => { try {
-			spook[v.split(".").slice(0, -1).join(".")] =
-				require("./main/" + v);
-		} catch(_) { try {
-			/* It's a folder. See if there's a `__main__.js` file. Load
-			   that instead.
-			*/
-			spook[v] = require("./main/" + v + "/__main__.js");
-		} catch(_) {} }});
-
+	setTimeout(_ => {
+		["relay", "models/__main__", "database"].map(v =>
+			spook[v.split("/")[0]] = require("./main/" + v + ".js")
+		);
 
 		//-- Unclog the queue and change `waitForChildren`. --//
 
 		spook.waitForChildren = callback => callback();
 		queue.map(v => v());
 		delete queue;
-	});
+	}, 0);
 
 	// Give the results to the user.
 	module.exports = spook;

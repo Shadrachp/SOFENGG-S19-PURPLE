@@ -5,7 +5,7 @@
 **/
 
 module.exports = models => { return {
-	name: {
+	username: {
 		type: String,
 		required: true,
 		unique: true,
@@ -14,8 +14,6 @@ module.exports = models => { return {
 	},
 	password: {
 		type: String,
-		required: true,
-		minlength: 4,
-		maxlength: 24
+		required: true
 	}
 }};

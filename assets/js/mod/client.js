@@ -1,8 +1,8 @@
 /**
- * Enable functionality for the client interface.
+ * Enable functionality for the client creation and interface.
  *
  * @author Llyme
- * @dependencies qTiny.js, info.js, relay.js, tipper.js
+ * @dependencies qTiny.js, info.js, relay.js, tipper.js, datastore.js
 **/
 const mod_client = {
 	/* List of clients. The key is the client's name in uppercase, and
@@ -10,19 +10,20 @@ const mod_client = {
 	   and the element associated with it.
 
 		list[CLIENTNAME] = {
+			key: "CLIENTNAME",
 			name: "ClientName",
 			time: 120, // 2 hours
 			log_space: HTMLElement,
 			logs: [
 				{
-					date,
-					code,
+					date: DateObject,
+					code: ["code 1", "code 2", ...],
 					time: [time_start, time_end],
-					lawyer,
-					description
+					lawyer: "LawyerName",
+					description: "Sample description."
 				}
 			],
-			logs_count: 5,
+			logs_count: 1,
 			btn: HTMLElement,
 			remove: Function
 		}
@@ -36,20 +37,6 @@ const mod_client = {
 	   client as the value.
 	*/
 	selected: null,
-	/* Offset from the first client in the database
-	   (case-insensitive alphabetical order).
-	*/
-	list_skip: 0,
-	/* Maximum buffer size for the client list before it needs to load
-	   more documents from the database. Any excess documents will be
-	   removed. The selected client will not be deselected when
-	   removed.
-	*/
-	list_limit: 128,
-	/* This is the max number of documents that will be returned
-	   for each request.
-	*/
-	list_buffer: 64,
 	// This prevents mass requests for more documents.
 	scroll_busy: false
 };
@@ -69,25 +56,30 @@ mod_client.space_new = (name, time, logs_count, sort) => {
 	logs_count = logs_count == null ? 0 : logs_count;
 	sort = sort == null ? true : sort;
 
-	let k = name.toUpperCase();
+	let key = name.toUpperCase();
 
 
 	// Return nothing if already created or empty string.
-	if (mod_client.list[k] || k.search(/\S/) == -1)
+	if (key.search(/\S/) == -1 ||
+		mod_client.list[key] && mod_client.list[key].remove)
 		return false;
 
 
-	/* Draw the client button element (We use a customized label
-	   since it's a lot easier to render than the usual 'button'
-	   element).
+	/* Draw the client button element. Automatically select it if it
+	   was still selected after being removed when scrolling too far.
 	*/
 	let btn = q("#client_space !label");
 	btn.innerHTML = name;
 
+	if (mod_client.selected == key)
+		btn.setAttribute("selected", 1);
+
 
 	// Add client's data to list.
-	if (!mod_client.list.hasOwnProperty(k))
-		mod_client.list[k] = {
+	let data = mod_client.list[key];
+
+	if (!data)
+		data = mod_client.list[key] = {
 			// Space for logs for this client.
 			log_space: q(
 				"#log !div class=log_space scroll=1 invisible=1"
@@ -96,26 +88,29 @@ mod_client.space_new = (name, time, logs_count, sort) => {
 			logs: []
 		};
 
-	mod_client.list[k].name = name;
-	mod_client.list[k].time = time;
-	mod_client.list[k].logs_count = logs_count;
-	mod_client.list[k].btn = btn;
+	data.key = key;
+	data.name = name;
+	data.time = time;
+	data.logs_count = logs_count;
+	data.btn = btn;
 	// This DOES NOT delete the document.
-	mod_client.list[k].remove = _ => {
+	data.remove = _ => {
 		btn.remove();
 
 		/* Only delete the visual stuff when this is the selected
 		   client.
 		*/
-		if (mod_client.selected != k) {
-			delete mod_client.list[k];
+		if (mod_client.selected != data.key) {
+			delete mod_client.list[data.key];
 
-			mod_client.log_space.remove();
-		} else
-			delete mod_client.list[k].btn;
+			data.log_space.remove();
+		} else {
+			delete data.remove;
+			delete data.btn;
+		}
 	};
 
-	mod_client.list_visible.push(k); // Tag as visible in the list.
+	mod_client.list_visible.push(key); // Tag as visible in the list.
 
 	btn.addEventListener("click", _ => {
 		/* If there was a previously selected client, hide their
@@ -124,26 +119,28 @@ mod_client.space_new = (name, time, logs_count, sort) => {
 		let prev = mod_client.selected;
 
 		if (prev) {
-			mod_client.list[prev].log_space
-				.setAttribute("invisible", 1);
-
-			if (mod_client.list[prev].hasOwnProperty("btn"))
+			if (mod_client.list[prev].hasOwnProperty("remove")) {
+				mod_client.list[prev].log_space
+					.setAttribute("invisible", 1);
 				mod_client.list[prev].btn
 					.removeAttribute("selected", 1);
-			else
+			} else {
+				mod_client.list[prev].log_space.remove();
+
 				delete mod_client.list[prev];
+			}
 		}
 
 
 		// Setup the information interface.
-		info_name.innerHTML = name;
-		mod_info.stats_time_update(mod_client.list[k].time);
-		mod_info.stats_log_update(mod_client.list[k].logs_count);
+		info_name.innerHTML = data.name;
+		mod_info.stats_time_update(data.time);
+		mod_info.stats_log_update(data.logs_count);
 
 
 		// Tag as selected and show its log interface.
-		mod_client.selected = k;
-		mod_client.list[k].log_space.removeAttribute("invisible");
+		mod_client.selected = data.key;
+		data.log_space.removeAttribute("invisible");
 		btn.setAttribute("selected", 1);
 	});
 
@@ -160,7 +157,7 @@ mod_client.space_new = (name, time, logs_count, sort) => {
 	*/
 	client_new.removeAttribute("glow");
 	space_empty.setAttribute("invisible", 1);
-	info_div.removeAttribute("invisible");
+	info.removeAttribute("invisible");
 	log_ctrl.removeAttribute("invisible");
 
 
@@ -170,126 +167,22 @@ mod_client.space_new = (name, time, logs_count, sort) => {
 
 		for (n = 0;
 			n < mod_client.list_dump.length &&
-			mod_client.list_dump[n] < k;
+			mod_client.list_dump[n] < key;
 			n++);
 
 		if (n < mod_client.list_dump.length) {
 			let prev = mod_client.list[mod_client.list_dump[n]].btn;
 
-			mod_client.list_dump.splice(n, 0, k);
+			mod_client.list_dump.splice(n, 0, key);
 			client_space.insertBefore(btn, prev);
 
 			return true;
 		}
 	}
 
-	mod_client.list_dump.push(k);
+	mod_client.list_dump.push(key);
 
 	return true;
-};
-
-/**
- * Load previous documents.
-**/
-mod_client.scroll_load_back = _ => {
-	if (mod_client.scroll_busy)
-		return;
-
-	mod_client.scroll_busy = true;
-
-	if (!mod_client.list_skip) {
-		// Nothing was skipped!
-		mod_client.scroll_busy = false;
-
-		return;
-	}
-
-	let skip = Math.min(
-		mod_client.list_buffer,
-		mod_client.list_skip
-	);
-
-	mod_relay.Client.get(
-		mod_client.list_skip - skip,
-		skip,
-	)(docs => {
-		if (mod_client.list_dump.length + docs.length >
-			mod_client.list_limit)
-			mod_client.list_dump.splice(
-				mod_client.list_limit -
-				mod_client.list_dump.length - docs.length
-			).map(
-				k => mod_client.list[k].remove()
-			);
-
-		docs.map(doc => mod_client.space_new(doc.name));
-
-		mod_client.list_skip -= docs.length;
-		mod_client.scroll_busy = false;
-	});
-
-	return true;
-};
-
-/**
- * Load next documents.
-**/
-mod_client.scroll_load_fore = _ => {
-	if (mod_client.scroll_busy)
-		return;
-
-	mod_client.scroll_busy = true;
-
-	mod_relay.Client.get(
-		mod_client.list_skip +
-			mod_client.list_dump.length,
-		mod_client.list_buffer,
-	)(docs => {
-		if (mod_client.list_dump.length + docs.length >
-			mod_client.list_limit)
-			mod_client.list_dump.splice(
-				0,
-				mod_client.list_dump.length + docs.length -
-				mod_client.list_limit
-			).map(
-				k => mod_client.list[k].remove()
-			);
-
-		docs.map(doc => mod_client.space_new(doc.name));
-
-		mod_client.list_skip += docs.length;
-		mod_client.scroll_busy = false;
-	});
-
-	return true;
-};
-
-/**
- * Load more documents based on scroll offset.
- *
- * @param {Integer|null} direction = null - 1 = Forward;
- * -1 = Backward; 0 or null = Auto (Forward, then backward.)
-**/
-mod_client.scroll_load = direction => {
-	if (mod_client.scroll_busy)
-		return;
-
-	/* We place a buffer of 20% of the scroll height so that the
-	   user doesn't necessarily scroll at the very top/bottom to
-	   load more.
-	*/
-	let scroll = client_space.scrollHeight -
-		client_space.clientHeight;
-	let buffer = scroll/5;
-
-	if (direction != -1 &&
-		client_space.scrollTop >= scroll - buffer)
-		// Forward scroll.
-		mod_client.scroll_load_fore();
-	else if (direction != 1 &&
-		client_space.scrollTop <= buffer)
-		// Backward scroll.
-		mod_client.scroll_load_back();
 };
 
 client_search.addEventListener("input", _ => {
@@ -332,27 +225,114 @@ info_ctrl_pref.addEventListener("click", _ =>
 	mod_pref.show(mod_client.list[mod_client.selected].name)
 );
 
-tipper(client_new, "<small>New Client</small>");
+tipper(client_new, "New Client");
 
-spook.waitForChildren(_ => {
-	// Load the clients as soon as the database has connected.
-	mod_relay.waitForDatabase(_ => {
-		mod_relay.Client.get(0, mod_client.list_limit)(docs => {
-			docs.map(doc => {
-				mod_client.space_new(doc.name, 0, 0, false);
-			});
+// Load the clients as soon as the database has connected.
+spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
+	let limit = 128,
+		buffer = 64;
+	let datastore = new mod_datastore(
+		limit,
+		buffer,
+		mod_relay.Client.get
+	);
 
-			client_space.addEventListener("scroll", event =>
-				mod_client.scroll_load()
-			);
+	/**
+	 * Load previous documents.
+	**/
+	let load_back = _ => {
+		if (mod_client.scroll_busy)
+			return;
 
-			client_space.addEventListener("wheel", event =>
-				mod_client.scroll_load(
-					event.deltaY < 0 ? -1 : 1
-				)
-			);
+		mod_client.scroll_busy = true;
+
+		datastore.load(true, (flag, docs) => {
+			if (!flag)
+				return mod_client.scroll_busy = false;
+
+			if (mod_client.list_dump.length + docs.length > limit)
+				mod_client.list_dump.splice(
+					limit - mod_client.list_dump.length - docs.length
+				).map(
+					key => mod_client.list[key].remove()
+				);
+
+			docs.map(doc => mod_client.space_new(doc.name));
+
+			mod_client.scroll_busy = false;
 		});
+
+		return true;
+	};
+
+	/**
+	 * Load next documents.
+	**/
+	let load_fore = _ => {
+		if (mod_client.scroll_busy)
+			return;
+
+		mod_client.scroll_busy = true;
+
+		datastore.load(false, (flag, docs) => {
+			if (!flag)
+				return mod_client.scroll_busy = false;
+
+			if (mod_client.list_dump.length + docs.length > limit)
+				mod_client.list_dump.splice(
+					0,
+					mod_client.list_dump.length + docs.length - limit
+				).map(
+					key => mod_client.list[key].remove()
+				);
+
+			docs.map(doc => mod_client.space_new(doc.name));
+
+			mod_client.scroll_busy = false;
+		});
+
+		return true;
+	};
+
+	/**
+	 * Load more documents based on scroll offset.
+	 *
+	 * @param {Integer|null} direction = null - 1 = Forward;
+	 * -1 = Backward; 0 or null = Auto (Forward, then backward.)
+	**/
+	let scroll = direction => {
+		if (mod_client.scroll_busy)
+			return;
+
+		/* We place a buffer of 20% of the scroll height so that the
+		   user doesn't necessarily need to scroll at the very
+		   top/bottom to load more.
+		*/
+		let scroll = client_space.scrollHeight -
+			client_space.clientHeight;
+		let buffer = scroll/5;
+
+		if (direction != -1 &&
+			client_space.scrollTop >= scroll - buffer)
+			// Forward scroll.
+			load_fore();
+		else if (direction != 1 &&
+			client_space.scrollTop <= buffer)
+			// Backward scroll.
+			load_back();
+	};
+
+	mod_relay.Client.get(0, buffer)(docs => {
+		docs.map(doc => {
+			mod_client.space_new(doc.name, 0, 0, false);
+		});
+
+		client_space.addEventListener("scroll", event => scroll());
+
+		client_space.addEventListener("wheel", event =>
+			scroll(event.deltaY < 0 ? -1 : 1)
+		);
 	});
-});
+}));
 
 spook.return();

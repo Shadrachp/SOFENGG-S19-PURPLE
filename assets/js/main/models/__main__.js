@@ -4,7 +4,6 @@
  *
  * @author Llyme
 **/
-const fs = require("fs");
 const mongoose = require("mongoose");
 
 
@@ -38,11 +37,7 @@ const operations = {
 //-- Melee Initialization --//
 
 // Grab them juicy models.
-let list = fs.readdirSync(__dirname);
-// Get rid of the constructor.
-list.splice(list.indexOf("__main__.js"), 1);
-// Remove extensions.
-list = list.map(v => v.split(".").slice(0, -1).join("."));
+let list = ["Client", "Code", "Lawyer", "Log", "User"];
 
 // Loop through all the models and 'try' to load them.
 while (list.length) {
@@ -51,7 +46,7 @@ while (list.length) {
 			/* Pass the `models` variable so that they can make use
 			   of other models' schema.
 			*/
-			require("./" + v)(models)
+			require("./" + v + ".js")(models)
 		);
 		let model = mongoose.model(v, schema);
 		model.schema = schema;

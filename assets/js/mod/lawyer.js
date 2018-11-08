@@ -2,7 +2,7 @@
  * Enable functionality for the log's popup window interface.
  *
  * @author Llyme
- * @dependencies vergil.js, log.js, drool.js
+ * @dependencies vergil.js, log.js, drool.js, tipper.js
 **/
 const mod_lawyer = {
 	/* List of created lawyers. The 'key/index' is the lawyer, while
@@ -87,5 +87,7 @@ log_popup_lawyer.addEventListener("blur", _ => {
 	if (!mod_lawyer.list[log_popup_lawyer.value.toLowerCase()])
 		log_popup_lawyer.value = "";
 });
+
+tipper(lawyer_new, "New Lawyer")
 
 spook.return();

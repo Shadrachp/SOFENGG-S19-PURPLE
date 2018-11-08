@@ -68,7 +68,10 @@ spook.load([
 
 // Modules `assets/js/mod`.
 spook.load([
+	"mod/loading",
 	"mod/relay",
+	"mod/datastore",
+	"mod/menu",
 	"mod/checkbox",
 	"mod/client",
 	"mod/client_popup",

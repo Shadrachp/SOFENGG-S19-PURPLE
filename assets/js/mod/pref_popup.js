@@ -51,28 +51,33 @@ const mod_pref = {};
 			"</div>"
 		);
 
+		mod_loading.show();
+
 		mod_relay.Client.edit(
 			target,
 			{
 				name: pref_popup_name.value
 			}
 		)(flag => {
+			mod_loading.hide();
+
 			if (flag) {
-				let k = pref_popup_name.value.toUpperCase();
+				let key = pref_popup_name.value.toUpperCase();
 
 				// Migrate data to new name.
-				mod_client.list[k] = mod_client.list[target_upper];
-				mod_client.list[k].name = pref_popup_name.value;
+				mod_client.list[key] = mod_client.list[target_upper];
+				mod_client.list[key].name = pref_popup_name.value;
+				mod_client.list[key].key = key;
 				delete mod_client.list[target_upper];
 
-				if (mod_client.list[k].hasOwnProperty("btn"))
-					mod_client.list[k].btn.innerHTML =
+				if (mod_client.list[key].hasOwnProperty("btn"))
+					mod_client.list[key].btn.innerHTML =
 						pref_popup_name.value;
 
 
 				// Select the new name.
 				target = info_name.innerHTML = pref_popup_name.value;
-				target_upper = mod_client.selected = k;
+				target_upper = mod_client.selected = key;
 
 				vergil(
 					"<label style=color:var(--success)>" +

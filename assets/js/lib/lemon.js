@@ -2,6 +2,11 @@
  * General-purpose function library, just like when life gives you
  * lemons!
  *
+ * lemon.time.toMilitary(String time)
+ * lemon.time.toMilitary_split(String time)
+ * lemon.time.toStandard(String time)
+ * lemon.time.toStandard_split(String time)
+ *
  * @author Llyme
 **/
 const lemon = {};

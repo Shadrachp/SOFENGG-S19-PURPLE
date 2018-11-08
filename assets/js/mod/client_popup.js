@@ -2,7 +2,7 @@
  * Enable functionality for the client's popup window interface.
  *
  * @author Llyme
- * @dependencies relay.js, vergil.js, client.js
+ * @dependencies relay.js, vergil.js, client.js, loading.js
 **/
 
 client_popup_input.addEventListener("keydown", event => {
@@ -48,7 +48,11 @@ client_popup_create.addEventListener("click", _ => {
 			"</div>"
 		);
 
+	mod_loading.show();
+
 	mod_relay.Client.new({name: client_popup_input.value})(flag => {
+		mod_loading.hide();
+
 		if (flag && mod_client.space_new(client_popup_input.value)) {
 			client_search.value = "";
 

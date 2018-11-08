@@ -5,63 +5,113 @@
 	<script src=../js/spook.js></script>
 </head>
 <body>
-	<div id=login>
-		<div>
-			<label>Uy's Law Firm</label>
-			<input id=login_user
-				type=text
-				placeholder=Username
-				input_text="0"
-				value="admin">
-			<input id=login_pwrd
-				type=password
-				placeholder=Password
-				input_text="0"
-				value="1234">
-			<button id=login_acpt button="0">Login</button>
-		</div>
-	</div>
-
 	<!-- Workspace section. Everything else goes here. -->
-	<div id=space>
+	<div id=space hidden>
+		<div id=menu>
+			<div class=menu_design></div>
+			<img id=menu_clients
+				src=../img/clients.png
+				button=1
+				draggable=false
+				selected=1
+			><img id=menu_lawyers
+				src=../img/lawyers.png
+				button=1
+				draggable=false
+			><img id=menu_codes
+				src=../img/codes.png
+				button=1
+				draggable=false
+			>
+		</div>
+
 		<!-- All work logs for the currently selected client. -->
 		<div id=log>
 			<div id=log_ctrl invisible>
-				<button id=log_ctrl_new button="0">New Log</button>
-				<button id=log_ctrl_sort button="0" hidden>Sort by Date</button>
+				<button id=log_ctrl_new
+					button="0">New Log</button>
+				<button id=log_ctrl_sort
+					button="0"
+					hidden>Sort by Date</button>
 			</div>
 		</div>
 
-		<label id=space_empty>There's nothing here...<br><small>Start by creating a new client!</small><br><smaller>Click the glowing button at the top-left corner to start.</smaller></label>
-
-		<!-- A list of all created clients. -->
-		<div id=client>
-			<input id=client_search
-				type=text
-				placeholder=Search
-				input_text="0">
-			<img id=client_new
-				src=../img/client_new.png
-				draggable=false
-				button="1"
-				glow>
-			<div id=client_space scroll=0></div>
-		</div>
+		<label id=space_empty>There's nothing here...<br><small>Start by creating a new client!</small><br><smaller>Click the glowing button from the left to start.</smaller></label>
 
 		<!-- The currently selected client's information. -->
-		<div id=info>
-			<div id=info_div invisible>
-				<label id=info_name></label>
-				<div id=info_stats>
-					<label>Accumulated Time</label>
-					<label id=info_stats_time></label>
-					<label>Total Logs</label>
-					<label id=info_stats_log></label>
-				</div>
-				<div id=info_ctrl>
-					<button id=info_ctrl_bill button="0" hidden>Billing</button>
-					<button id=info_ctrl_pref button="0">Preferences</button>
-				</div>
+		<div id=info sidebar invisible>
+			<label id=info_name></label>
+			<div id=info_stats>
+				<label>Accumulated Time</label>
+				<label id=info_stats_time></label>
+				<label>Total Logs</label>
+				<label id=info_stats_log></label>
+			</div>
+			<div id=info_ctrl>
+				<button
+					id=info_ctrl_bill
+					button="0"
+					hidden
+				>Billing</button>
+				<button
+					id=info_ctrl_pref
+					button="0"
+				>Preferences</button>
+			</div>
+		</div>
+
+		<div id=sidebar toggle=1>
+			<!-- A list for all created clients. -->
+			<div id=client>
+				<input id=client_search
+					class=sidebar_search
+					type=text
+					placeholder=Search
+					input_text="0"
+				><img id=client_new
+					class=sidebar_new
+					src=../img/new.png
+					draggable=false
+					button="1"
+					glow
+				>
+				<div id=client_space
+					class=sidebar_space
+					scroll=0></div>
+			</div>
+			<!-- A list for all created lawyers. -->
+			<div id=lawyer invisible>
+				<input id=lawyer_search
+					class=sidebar_search
+					type=text
+					placeholder=Search
+					input_text="0"
+				><img id=lawyer_new
+					class=sidebar_new
+					src=../img/new.png
+					draggable=false
+					button="1"
+				>
+				<div id=lawyer_space
+					class=sidebar_space
+					scroll=0></div>
+			</div>
+			<!-- A list for all created codes. -->
+			<div id=code invisible>
+				<input id=code_search
+					class=sidebar_search
+					type=text
+					placeholder=Search
+					input_text="0"
+				><img id=code_new
+					class=sidebar_new
+					src=../img/new.png
+					draggable=false
+					button="1"
+				>
+				<div id=code_space
+					class=sidebar_space
+					scroll=0></div>
 			</div>
 		</div>
 	</div>
@@ -115,16 +165,6 @@
 		</div>
 	</div>
 
-	<div id=log_new_popup invisible>
-		<dim></dim>
-		<div>
-			<label>There are entries missing in your log!<br><small>Do you still want to continue?</small></label>
-			<label id=log_new_popup_label></label>
-			<button id=log_new_popup_cancel button=0>Cancel</button>
-			<button id=log_new_popup_submit button=0>Submit</button>
-		</div>
-	</div>
-
 	<div id=pref_popup invisible>
 		<dim></dim>
 		<div scroll="0">
@@ -137,6 +177,28 @@
 			<button id=pref_popup_clear button="0">Clear This Client's Log</button>
 			<button id=pref_popup_danger button="0">Delete This Client</button> -->
 		</div>
+	</div>
+
+	<div id=login>
+		<div>
+			<label>Uy's Law Firm</label>
+			<input id=login_user
+				type=text
+				placeholder=Username
+				input_text="0"
+				value="admin">
+			<input id=login_pwrd
+				type=password
+				placeholder=Password
+				input_text="0"
+				value="1234">
+			<button id=login_acpt button="0">Login</button>
+		</div>
+	</div>
+
+	<div id=loading invisible>
+		<dim></dim>
+		<img src=../img/loading.png draggable=false>
 	</div>
 
 	<!-- Preloading screen. We show this to the user if the system

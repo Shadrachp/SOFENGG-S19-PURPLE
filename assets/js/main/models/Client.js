@@ -9,7 +9,7 @@ module.exports = models => { return {
 		type: String,
 		required: true,
 		unique: true,
-		minlength: 4,
+		minlength: 2,
 		maxlength: 64
 	},
 	time: {

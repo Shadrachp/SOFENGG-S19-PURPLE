@@ -18,7 +18,6 @@ dim {
 	height: 100%;
 	background-color: #000;
 	opacity: 0.4;
-	pointer-events: none;
 	transition: all 0.2s;
 }
 
@@ -31,7 +30,7 @@ dim {
 	   by giving them a text with a very nice color.
 	*/
 	--success: #0f6f3f;
-	/* Use this color for submit buttons or you are informing a user
+	/* Use this color for buttons or you are informing a user
 	   for something important (like if the input only accepts date
 	   format).
 	*/
@@ -49,6 +48,18 @@ dim {
 	   for the windows.
 	*/
 	--background-accent1: #fff;
+	/* Color for all lawyers things.
+	*/
+	--accent_client: #3f9fff;
+	/* Color for all lawyers things.
+	*/
+	--accent_lawyer: #0f6f9f;
+	/* Color for all lawyers things.
+	*/
+	--accent_code: #6f3f9f;
+	/*
+	*/
+	--submit: #0f9f3f;
 }
 
 
@@ -267,6 +278,30 @@ smaller {
 
 
 
+/*-- Popup Window Style --*/
+
+[popup] {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	transition: opacity 0.2s;
+	z-index: 4;
+}
+
+[popup] > div {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	border-radius: 8px;
+	background-color: #fff;
+	transform: translate(-50%, -50%);
+}
+
+
+
+
 /*-- Preload --*/
 
 #preload {
@@ -371,7 +406,7 @@ smaller {
 	margin: auto;
 	margin-top: 32px;
 	padding: 0 32px;
-	background-color: #0f6fcf;
+	background-color: var(--info);
 	color: #fff;
 	cursor: pointer;
 }
@@ -427,7 +462,7 @@ smaller {
 /*-- Client --*/
 
 #client_new {
-	background-color: #3f9fff;
+	background-color: var(--accent_client);
 }
 
 
@@ -436,7 +471,43 @@ smaller {
 /*-- Lawyer --*/
 
 #lawyer_new {
-	background-color: #0f6f9f;
+	background-color: var(--accent_lawyer);
+}
+
+
+
+
+/*-- `lawyer_popup` --*/
+
+#lawyer_popup > div {
+	padding: 8px;
+}
+
+#lawyer_popup > div > label {
+	display: block;
+	margin-top: 8px;
+	color: var(--accent_lawyer);
+	text-align: center;
+	font-size: 20px;
+	font-weight: lighter;
+}
+
+#lawyer_popup_input {
+	display: block;
+	width: 256px;
+	margin: 16px 8px;
+	font-size: 16px;
+}
+
+#lawyer_popup_cancel {
+	color: #fff;
+	background-color: #3f3f3f;
+}
+
+#lawyer_popup_create {
+	float: right;
+	color: #fff;
+	background-color: var(--submit);
 }
 
 
@@ -445,7 +516,66 @@ smaller {
 /*-- Codes --*/
 
 #code_new {
-	background-color: #6f3f9f;
+	background-color: var(--accent_code);
+}
+
+#code_space > label {
+	line-height: calc(1em + 8px);
+}
+
+#code_space > label > label {
+	margin-right: 8px;
+	padding: 2px 4px;
+	border-radius: 4px;
+	color: #fff;
+	background-color: var(--accent_code);
+	pointer-events: none;
+}
+
+
+
+/*-- `code_popup` --*/
+
+#code_popup > div {
+	padding: 8px;
+}
+
+#code_popup> div > label:first-child {
+	margin-left: 0;
+	color: var(--accent_code);
+	text-align: center;
+	font-size: 20px;
+	font-weight: lighter;
+}
+
+#code_popup > div > label {
+	display: block;
+	margin: 8px 0;
+	margin-left: 8px;
+	font-size: 16px;
+}
+
+#code_popup > div > input {
+	display: block;
+	width: 256px;
+	margin: 8px 8px;
+	margin-bottom: 16px;
+	font-size: 16px;
+}
+
+#code_popup_code {
+	text-transform: uppercase;
+}
+
+#code_popup_cancel {
+	color: #fff;
+	background-color: #3f3f3f;
+}
+
+#code_popup_create {
+	float: right;
+	color: #fff;
+	background-color: var(--submit);
 }
 
 
@@ -520,7 +650,7 @@ smaller {
 
 #info_ctrl_bill {
 	color: #fff;
-	background-color: #0f9f3f;
+	background-color: var(--submit);
 }
 
 #info_ctrl_pref {
@@ -571,15 +701,15 @@ smaller {
 }
 
 #menu_clients {
-	background-color: #3f9fff;
+	background-color: var(--accent_client);
 }
 
 #menu_lawyers {
-	background-color: #0f6f9f;
+	background-color: var(--accent_lawyer);
 }
 
 #menu_codes {
-	background-color: #6f3f9f;
+	background-color: var(--accent_code);
 }
 
 
@@ -677,6 +807,29 @@ smaller {
 	pointer-events: none;
 }
 
+.sidebar_space > label[selected] > .sidebar_pref {
+	display: block;
+	pointer-events: all;
+}
+
+.sidebar_pref {
+	display: none;
+	margin-top: -4px;
+	margin-right: -8px;
+	float: right;
+	transition: all 0.2s;
+}
+
+.sidebar_pref:hover {
+	transform: rotateZ(45deg);
+	filter: brightness(80%);
+}
+
+.sidebar_pref:active {
+	filter: brightness(60%);
+	transition: all 0.1s;
+}
+
 
 
 
@@ -704,7 +857,7 @@ smaller {
 }
 
 #log_ctrl_new {
-	background-color: #0f6fcf;
+	background-color: var(--info);
 	color: #fff;
 }
 
@@ -781,7 +934,7 @@ smaller {
 }
 
 .log_space > *[expand] .log_space_date {
-	color: #0f6fcf;
+	color: var(--info);
 }
 
 .log_space_lawyer {
@@ -840,27 +993,12 @@ smaller {
 
 /*-- log_popup --*/
 
-#log_popup {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	transition: opacity 0.2s;
-	z-index: 4;
-}
-
 
 #log_popup > div {
-	position: absolute;
-	top: 50%;
-	left: 50%;
 	width: 572px;
 	padding-right: 8px;
 	padding-bottom: 8px;
-	border-radius: 8px;
 	background-color: #fff;
-	transform: translate(-50%, -50%);
 }
 
 #log_popup > div >
@@ -943,14 +1081,14 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 }
 
 #log_popup_code label:first-child {
-	background-color: #0f6fcf;
+	background-color: var(--accent_code);
 	color: #fff;
 	transition: all 0.2s;
 }
 
 #log_popup_code label:first-child:focus {
 	background-color: #fff;
-	box-shadow: 0 0 4px #0f6fcf;
+	box-shadow: 0 0 4px var(--accent_code);
 	color: #000;
 	padding: 4px 10px;
 	cursor: text;
@@ -976,7 +1114,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 }
 
 #log_popup_ctrl_bill {
-	background-color: #0f9f3f;
+	background-color: var(--submit);
 	color: #fff;
 }
 
@@ -991,7 +1129,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 }
 
 #log_popup_ctrl_submit {
-	background-color: #0f6fcf;
+	background-color: var(--submit);
 	color: #fff;
 	float: right;
 }
@@ -1001,28 +1139,14 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 
 /*-- client_popup --*/
 
-#client_popup {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	transition: opacity 0.2s;
-	z-index: 4;
-}
-
 #client_popup > div {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	border-radius: 8px;
-	background-color: #fff;
-	transform: translate(-50%, -50%);
+	padding: 8px;
 }
 
 #client_popup > div > label {
 	display: block;
-	margin-top: 16px;
+	margin-top: 8px;
+	color: var(--accent_client);
 	text-align: center;
 	font-size: 20px;
 	font-weight: lighter;
@@ -1031,25 +1155,19 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 #client_popup_input {
 	display: block;
 	width: 256px;
-	margin: 16px;
+	margin: 16px 8px;
 	font-size: 16px;
 }
 
-#client_popup > div > button {
-	margin-bottom: 16px;
-}
-
 #client_popup_cancel {
-	margin-left: 16px;
 	color: #fff;
 	background-color: #3f3f3f;
 }
 
 #client_popup_create {
-	margin-right: 16px;
 	float: right;
 	color: #fff;
-	background-color: #0f9f3f;
+	background-color: var(--submit);
 }
 
 
@@ -1057,27 +1175,11 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 
 /*-- `pref_popup` --*/
 
-#pref_popup {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	transition: opacity 0.2s;
-	z-index: 4;
-}
-
 #pref_popup > div {
-	position: absolute;
-	top: 50%;
-	left: 50%;
 	width: 320px;
 	max-height: calc(100% - 64px);
 	padding: 16px;
 	padding-top: 24px;
-	border-radius: 8px;
-	background-color: #fff;
-	transform: translate(-50%, -50%);
 	overflow-y: auto;
 }
 

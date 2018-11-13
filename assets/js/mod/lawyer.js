@@ -1,16 +1,60 @@
 /**
- * Enable functionality for the log's popup window interface.
+ * Enable functionality for the log's lawyer interface in the sidebar.
  *
  * @author Llyme
- * @dependencies vergil.js, log.js, drool.js, tipper.js
+ * @dependencies vergil.js, log.js, drool.js, tipper.js, sidebar.js
 **/
-const mod_lawyer = {
-	/* List of created lawyers. The 'key/index' is the lawyer, while
-	   the value is the list of logs that the lawyer is involved with.
-	*/
-	list: []
-};
-mod_lawyer.list[" "] = [];
+const mod_lawyer = {};
+
+spook.waitForChildren(_ => mod_relay.waitForDatabase(_ =>
+	mod_sidebar.init(
+		client_space,
+		128,
+		64,
+		mod_relay.Lawyer.get,
+		doc => doc.key,
+		(doc, index) => {
+			// Empty string.
+			if (doc.name.search(/\S/) == -1)
+				return;
+
+			// Already created.
+			if (mod_lawyer.has(doc.key))
+				return;
+
+
+			/* Draw the client button element. Automatically select it
+			   if it was still selected after being removed when
+			   scrolling too far.
+			*/
+			let btn = q("#lawyer_space !label");
+			btn.innerHTML = doc.name;
+
+			if (index != null)
+				lawyer_space.insertBefore(
+					btn,
+					lawyer_space.childNodes[index]
+				);
+
+
+			// Add client's data to list.
+			let data = mod_lawyer.get(doc.key) || doc;
+			data.btn = btn;
+
+
+			// Setup button.
+			btn.addEventListener("click", event => {
+			});
+
+			return data;
+		},
+		data => {
+			data.btn.remove();
+
+			return true;
+		}
+	)(mod_lawyer)
+));
 
 // User focused on the lawyer input.
 log_popup_lawyer.addEventListener("focus", _ => {
@@ -88,6 +132,13 @@ log_popup_lawyer.addEventListener("blur", _ => {
 		log_popup_lawyer.value = "";
 });
 
-tipper(lawyer_new, "New Lawyer")
+lawyer_new.addEventListener("click", _ => {
+	lawyer_popup_input.value = "";
+
+	lawyer_popup.removeAttribute("invisible");
+	lawyer_popup_input.focus();
+});
+
+tipper(lawyer_new, "New Lawyer");
 
 spook.return();

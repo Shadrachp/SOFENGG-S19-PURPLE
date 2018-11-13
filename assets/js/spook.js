@@ -31,10 +31,10 @@ if ((_ => { try { return !!document } catch(_) { } })()) {
 
 	/**
 	 * Load a script module.
-	 * @param {String | Array} v - The script/s to be loaded. File
+	 * @param {String|Array[String]} v - The script/s to be loaded. File
 	 * must be inside the `assets/js/` folder. If array, the
 	 * left-most will be loaded first.
-	 * @return {HTMLElement | Array[HTMLElement]} the tag/s created.
+	 * @return {HTMLElement|Array[HTMLElement]} the tag/s created.
 	**/
 	spook.load = v => {
 		if (typeof(v) == "object")
@@ -91,7 +91,7 @@ if ((_ => { try { return !!document } catch(_) { } })()) {
 	 * will immediately be called if all the children are already
 	 * loaded.
 	 *
-	 * @param Function() callback - this will be called when everything
+	 * @param {Function} callback - this will be called when everything
 	 * is loaded.
 	**/
 	spook.waitForChildren = callback => queue.push(callback);
@@ -102,8 +102,8 @@ if ((_ => { try { return !!document } catch(_) { } })()) {
 			spook[v.split("/")[0]] = require("./main/" + v + ".js")
 		);
 
-		//-- Unclog the queue and change `waitForChildren`. --//
 
+		// Flush the queue and change `waitForChildren`.
 		spook.waitForChildren = callback => callback();
 		queue.map(v => v());
 		delete queue;

@@ -55,11 +55,11 @@ const mod_relay = {
 			 * Create a new user document.
 			 *
 			 * send():
-			 * @param Object properties - properties necessary to make
+			 * @param {Object} properties - properties necessary to make
 			 * a new document.
 			 *
 			 * callback():
-			 * @param Boolean flag - successful if `true`, or
+			 * @param {Boolean} flag - successful if `true`, or
 			 * invalid if `false`.
 			**/
 			"new",
@@ -68,12 +68,12 @@ const mod_relay = {
 			 * arguments.
 			 *
 			 * send():
-			 * @param String username - the username.
-			 * @param String password - the password. This is
+			 * @param {String} username - the username.
+			 * @param {String} password - the password. This is
 			 * automatically hashed.
 			 *
 			 * callback():
-			 * @param Integer flag - 0 = No such username;
+			 * @param {Integer} flag - 0 = No such username;
 			 * 1 = Incorrect password;
 			 * 2 = Found username and correct password.
 			**/
@@ -84,11 +84,11 @@ const mod_relay = {
 			 * Create a new client document.
 			 *
 			 * send():
-			 * @param Object properties - properties necessary to make
+			 * @param {Object} properties - properties necessary to make
 			 * a new document.
 			 *
 			 * callback():
-			 * @param Boolean|null flag - successful if `true`,
+			 * @param {Boolean|null} flag - successful if `true`,
 			 * invalid if `false`, or error if `null`.
 			**/
 			"new",
@@ -96,13 +96,13 @@ const mod_relay = {
 			 * Update an existing document.
 			 *
 			 * send():
-			 * @param String name - the name of the client that you
+			 * @param {String} name - the name of the client that you
 			 * want to edit.
-			 * @param Object properties - the things you want to
+			 * @param {Object} properties - the things you want to
 			 * change.
 			 *
 			 * callback():
-			 * @param Boolean|null flag - successful if `true`,
+			 * @param {Boolean|null} flag - successful if `true`,
 			 * invalid if `false`, or error if `null`.
 			**/
 			"edit",
@@ -110,16 +110,105 @@ const mod_relay = {
 			 * Grab some documents from the database.
 			 *
 			 * send():
-			 * @param Integer skip - the first few documents in the
+			 * @param {Integer} skip - the first few documents in the
 			 * query that you'll ignore and be not in the results.
-			 * @param Integer limit - will return as much as this
+			 * @param {Integer} limit - will return as much as this
 			 * number or less. You can't get all of the documents at
 			 * once, unless you know how many there are.
-			 * @param Object query - will filter out the
+			 * @param {Object} query - will filter out the
 			 * documents.
 			 *
 			 * callback():
-			 * @param Array[Object]|null docs - the documents you
+			 * @param {Array[Object]|null} docs - the documents you
+			 * specifically requested. `null` if nothing was found.
+			**/
+			"get"
+		],
+		Lawyer: [
+			/**
+			 * Create a new lawyer document.
+			 *
+			 * send():
+			 * @param {Object} properties - properties necessary to make
+			 * a new document.
+			 *
+			 * callback():
+			 * @param {Boolean|null} flag - successful if `true`,
+			 * invalid if `false`, or error if `null`.
+			**/
+			"new",
+			/**
+			 * Update an existing document.
+			 *
+			 * send():
+			 * @param {String} name - the name of the lawyer that you
+			 * want to edit.
+			 * @param {Object} properties - the things you want to
+			 * change.
+			 *
+			 * callback():
+			 * @param {Boolean|null} flag - successful if `true`,
+			 * invalid if `false`, or error if `null`.
+			**/
+			"edit",
+			/**
+			 * Grab some documents from the database.
+			 *
+			 * send():
+			 * @param {Integer} skip - the first few documents in the
+			 * query that you'll ignore and be not in the results.
+			 * @param {Integer} limit - will return as much as this
+			 * number or less. You can't get all of the documents at
+			 * once, unless you know how many there are.
+			 * @param {Object} query - will filter out the
+			 * documents.
+			 *
+			 * callback():
+			 * @param {Array[Object]|null} docs - the documents you
+			 * specifically requested. `null` if nothing was found.
+			**/
+			"get"
+		],
+		Code: [
+			/**
+			 * Create a new code document.
+			 *
+			 * send():
+			 * @param {Object} properties - properties necessary to make
+			 * a new document.
+			 *
+			 * callback():
+			 * @param {Boolean|null} flag - successful if `true`,
+			 * invalid if `false`, or error if `null`.
+			**/
+			"new",
+			/**
+			 * Update an existing document.
+			 *
+			 * send():
+			 * @param {String} code - the code that you want to edit.
+			 * @param {Object} properties - the things you want to
+			 * change.
+			 *
+			 * callback():
+			 * @param {Boolean|null} flag - successful if `true`,
+			 * invalid if `false`, or error if `null`.
+			**/
+			"edit",
+			/**
+			 * Grab some documents from the database.
+			 *
+			 * send():
+			 * @param {Integer} skip - the first few documents in the
+			 * query that you'll ignore and be not in the results.
+			 * @param {Integer} limit - will return as much as this
+			 * number or less. You can't get all of the documents at
+			 * once, unless you know how many there are.
+			 * @param {Object} query - will filter out the
+			 * documents.
+			 *
+			 * callback():
+			 * @param {Array[Object]|null} docs - the documents you
 			 * specifically requested. `null` if nothing was found.
 			**/
 			"get"

@@ -27,7 +27,8 @@ mod_log.space_new = (client,
 					 time_end,
 					 lawyer,
 					 description) => {
-	let log_space = mod_client.list[client].log_space;
+	let client_data = mod_client.get(client);
+	let log_space = client_data.log_space;
 	let root = q("!div");
 
 	log_space.insertBefore(root, log_space.childNodes[0]);
@@ -46,9 +47,9 @@ mod_log.space_new = (client,
 		data.time.push(!v ? 0 : (v[0]*60 + v[1]));
 	});
 
-	mod_client.list[client].time += data.time[1] - data.time[0];
-	mod_client.list[client].logs_count++;
-	mod_client.list[client].logs.push(data);
+	client_data.time += data.time[1] - data.time[0];
+	client_data.logs_count++;
+	client_data.logs.push(data);
 
 	root.addEventListener("click", _ =>
 		(root.getAttribute("expand") ?
@@ -95,8 +96,8 @@ mod_log.space_new = (client,
 
 
 	/* Update the information interface. */
-	mod_info.stats_time_update(mod_client.list[client].time);
-	mod_info.stats_log_update(mod_client.list[client].logs_count);
+	mod_info.stats_time_update(client_data.time);
+	mod_info.stats_log_update(client_data.logs_count);
 
 
 	/* Hide the popup window and send a notification to the

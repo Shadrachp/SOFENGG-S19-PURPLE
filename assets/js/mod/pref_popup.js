@@ -34,7 +34,7 @@ const mod_pref = {};
 			vergil(txt);
 		};
 
-		// Name must contain SOMETHING. Don't make fun of me, please :(
+		// Name must contain SOMETHING.
 		if (!pref_popup_name.value &&
 			pref_popup_name.value.search(/\S/) == -1) return fn(
 			"<label style=color:var(--warning)>" +
@@ -42,12 +42,11 @@ const mod_pref = {};
 			"</label>"
 		);
 
-		// Name must have a length of 4 characters or more.
-		if (pref_popup_name.value.length < 4 ||
+		if (pref_popup_name.value.length < 2 ||
 			pref_popup_name.value.length > 64) return fn(
 			"<div style=color:var(--warning)>" +
-			"Client's name must have at least <b>4 characters</b> and" +
-			" up to <b>64 characters</b> at most." +
+			"Client's name must have at least <b>2 characters</b> " +
+			"and up to <b>64 characters</b> at most." +
 			"</div>"
 		);
 
@@ -65,14 +64,16 @@ const mod_pref = {};
 				let key = pref_popup_name.value.toUpperCase();
 
 				// Migrate data to new name.
-				mod_client.list[key] = mod_client.list[target_upper];
-				mod_client.list[key].name = pref_popup_name.value;
-				mod_client.list[key].key = key;
-				delete mod_client.list[target_upper];
+				let data = mod_client.get(target_upper);
+				data.name = pref_popup_name.value;
+				data.key = key;
 
-				if (mod_client.list[key].hasOwnProperty("btn"))
-					mod_client.list[key].btn.innerHTML =
-						pref_popup_name.value;
+				mod_client.move(target_upper, key);
+
+				if (data.hasOwnProperty("btn"))
+					data.btn.innerHTML =
+						pref_popup_name.value +
+						mod_client.pref_btn;
 
 
 				// Select the new name.

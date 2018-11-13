@@ -5,12 +5,12 @@
 **/
 
 module.exports = models => { return {
-	data: {
+	code: {
 		type: String,
-		required: true,
-		unique: true,
-		minlength: 4,
-		maxlength: 24
+		required: true
 	},
-	logs: [models.Log.schema]
+	description: {
+		type: String,
+		default: ""
+	}
 }};

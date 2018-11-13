@@ -99,8 +99,8 @@ let filter = {
 				else
 					event.sender.send(channel, id, false);
 			}),
-		edit: (event, id, name, properties, channel) => {
-			spook.models.Client.findOne({name: name}).then(doc => {
+		edit: (event, id, name, properties, channel) =>
+			spook.models.Client.findOne({name}).then(doc => {
 				if (doc) {
 					doc.set(properties);
 					doc.save((err, doc) => event.sender.send(
@@ -110,9 +110,8 @@ let filter = {
 					));
 				} else
 					event.sender.send(channel, id, false);
-			});
-		},
-		get: (event, id, skip, limit, channel) => {
+			}),
+		get: (event, id, skip, limit, channel) =>
 			spook.models.Client.aggregate([{
 				// We only need the name.
 				$project: {
@@ -137,8 +136,114 @@ let filter = {
 				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
 			}]).then(docs =>
 				event.sender.send(channel, id, docs)
-			);
-		}
+			)
+	},
+	Lawyer: {
+		new: (event, id, properties, channel) =>
+			spook.models.Lawyer.findOne({name: properties.name})
+			.then(doc => {
+				if (!doc)
+					spook.models.Lawyer.new(properties, doc =>
+						event.sender.send(
+							channel,
+							id,
+							doc ? true : false
+						)
+					);
+				else
+					event.sender.send(channel, id, false);
+			}),
+		edit: (event, id, name, properties, channel) =>
+			spook.models.Lawyer.findOne({name}).then(doc => {
+				if (doc) {
+					doc.set(properties);
+					doc.save((err, doc) => event.sender.send(
+						channel,
+						id,
+						err ? false : true
+					));
+				} else
+					event.sender.send(channel, id, false);
+			}),
+		get: (event, id, skip, limit, channel) =>
+			spook.models.Lawyer.aggregate([{
+				// We only need the name.
+				$project: {
+					_id: 0,
+					name: 1
+				}
+			}, {
+				// Make an uppercased version.
+				$addFields: {
+					key: {$toUpper: "$name"}
+				}
+			}, {
+				// Sort by uppercased version.
+				$sort: {
+					key: 1
+				}
+			}, {
+				// Skip stuff.
+				$skip: skip != null ? (skip < 0 ? 0 : skip) : 0
+			}, {
+				// Limit results (excluding skipped stuff).
+				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
+			}]).then(docs =>
+				event.sender.send(channel, id, docs)
+			)
+	},
+	Code: {
+		new: (event, id, properties, channel) => {
+			console.log("GOTTEM", properties);
+			spook.models.Code.findOne({code: properties.code})
+			.then(doc => {
+				console.log("YAMERO", doc);
+				if (!doc)
+					spook.models.Code.new(properties, doc =>
+						event.sender.send(
+							channel,
+							id,
+							doc ? true : false
+						)
+					);
+				else
+					event.sender.send(channel, id, false);
+			})
+		},
+		edit: (event, id, code, properties, channel) =>
+			spook.models.Code.findOne({code}).then(doc => {
+				if (doc) {
+					doc.set(properties);
+					doc.save((err, doc) => event.sender.send(
+						channel,
+						id,
+						err ? false : true
+					));
+				} else
+					event.sender.send(channel, id, false);
+			}),
+		get: (event, id, skip, limit, channel) =>
+			spook.models.Code.aggregate([{
+				// We only need the name.
+				$project: {
+					_id: 0,
+					code: 1,
+					description: 1
+				}
+			}, {
+				// Sort by code.
+				$sort: {
+					code: 1
+				}
+			}, {
+				// Skip stuff.
+				$skip: skip != null ? (skip < 0 ? 0 : skip) : 0
+			}, {
+				// Limit results (excluding skipped stuff).
+				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
+			}]).then(docs =>
+				event.sender.send(channel, id, docs)
+			)
 	}
 };
 

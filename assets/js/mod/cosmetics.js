@@ -1,11 +1,13 @@
 /**
- * Renders all checkbox tags and enable functionality.
+ * Render all stuff that matters.
  *
  * @author Llyme
  * @dependencies qTiny.js
 **/
 
 spook.waitForChildren(_ => {
+	//-- Checkboxes --//
+
 	let l = q("checkbox");
 
 	for (let i = 0; i < l.length; i++) {
@@ -17,6 +19,18 @@ spook.waitForChildren(_ => {
 			event.target.setAttribute("active", 1)
 		));
 	}
+
+
+
+
+	//-- Popup Windows --//
+
+	let list = document.querySelectorAll("[popup]");
+
+	for (let i = 0; i < list.length; i++)
+		list[i].querySelector("dim").addEventListener("mousedown", _ =>
+			list[i].setAttribute("invisible", 1)
+		);
 });
 
 spook.return();

@@ -8,7 +8,7 @@ module.exports = models => { return {
 	name: {
 		type: String,
 		required: true,
-		minlength: 4,
-		maxlength: 24
+		minlength: 2,
+		maxlength: 64
 	}
 }};

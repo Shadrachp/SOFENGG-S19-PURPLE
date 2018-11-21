@@ -5,6 +5,10 @@
 **/
 
 module.exports = models => { return {
+	user: {
+		type: require("mongoose").Schema.Types.ObjectId,
+		required: true
+	},
 	name: {
 		type: String,
 		required: true,
@@ -20,5 +24,12 @@ module.exports = models => { return {
 			message: "{VALUE} is not an integer."
 		}
 	},
-	logs: [models.Log.schema]
+	logs_count: {
+		type: Number,
+		default: 0,
+		validate: {
+			validator: Number.isInteger,
+			message: "{VALUE} is not an integer."
+		}
+	}
 }};

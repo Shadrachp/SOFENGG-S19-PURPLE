@@ -4,133 +4,186 @@
  * @author Llyme
  * @dependencies vergil.js, log.js, drool.js, tipper.js, sidebar.js
 **/
-const mod_lawyer = {};
+const mod_lawyer = {
+	tooltip_search:
+		"<center small>" +
+		"<b style=color:var(--info)>TYPE</b> something to search " +
+		"for <b style=color:var(--accent-lawyer)>LAWYERS</b>.<br>" +
+		"</center>",
+	tooltip_load:
+		"<center small style=color:var(--info)>LOADING...</center>"
+};
 
-spook.waitForChildren(_ => mod_relay.waitForDatabase(_ =>
-	mod_sidebar.init(
-		client_space,
-		128,
-		64,
-		mod_relay.Lawyer.get,
-		doc => doc.key,
-		(doc, index) => {
-			// Empty string.
+mod_lawyer.setConversationID = _ => _;
+
+spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
+	let conversation_id;
+
+	mod_lawyer.setConversationID = hash => {
+		conversation_id = hash;
+
+		mod_lawyer_popup.setConversationID(hash);
+		// Fill up the list with existing documents.
+		mod_lawyer.init();
+	};
+
+	mod_datastore.init(lawyer_space, 128, 64, {
+		getter: (skip, limit) =>
+			mod_relay.Lawyer.get(conversation_id, skip, limit, ""),
+		key: doc => doc.key || doc.name.toUpperCase(),
+		new: (doc, index) => {
 			if (doc.name.search(/\S/) == -1)
 				return;
 
-			// Already created.
-			if (mod_lawyer.has(doc.key))
-				return;
-
-
-			/* Draw the client button element. Automatically select it
-			   if it was still selected after being removed when
-			   scrolling too far.
-			*/
-			let btn = q("#lawyer_space !label");
+			let btn = doc.btn = q("#lawyer_space !label");
 			btn.innerHTML = doc.name;
 
-			if (index != null)
+			if (index == null)
+				lawyer_space.appendChild(btn);
+			else
 				lawyer_space.insertBefore(
 					btn,
 					lawyer_space.childNodes[index]
 				);
 
-
-			// Add client's data to list.
-			let data = mod_lawyer.get(doc.key) || doc;
-			data.btn = btn;
-
-
-			// Setup button.
 			btn.addEventListener("click", event => {
 			});
 
-			return data;
+			return doc;
 		},
-		data => {
-			data.btn.remove();
+		remove: doc => {
+			doc.btn.remove();
 
 			return true;
+		},
+		move: (doc, index) => {
+			if (index == null)
+				client_space.appendChild(doc.btn);
+			else
+				client_space.insertBefore(
+					doc.btn,
+					client_space.childNodes[index]
+				);
 		}
-	)(mod_lawyer)
-));
+	})(mod_lawyer);
 
-// User focused on the lawyer input.
-log_popup_lawyer.addEventListener("focus", _ => {
-	let txt =
-		"<div style=color:var(--info);text-align:center;>" +
-		"Add This Lawyer" +
-		"</div>";
-	let l = mod_lawyer.list[" "];
-	let add;
 
-	if (!mod_lawyer.list[log_popup_lawyer.value.toLowerCase()]) {
-		add = 1;
-		l = l.map(v => v);
-		l.unshift(txt);
-	}
 
-	let fn = _ => {
-		let key = log_popup_lawyer.value.toLowerCase();
-		let l = mod_lawyer.list[" "].filter(
-			v => v.toLowerCase().indexOf(key) != -1
-		);
 
-		add = !mod_lawyer.list[key];
+	//-- `log_popup_lawyer` --//
 
-		if (add) l.unshift(txt);
+	let log_popup_lawyer_config = {
+		debounce: {},
+		tooltip: null,
+		update: null,
+		fn: _ => {
+			if (!log_popup_lawyer_config.update)
+				return;
 
-		return l;
+			if (!log_popup_lawyer.value) {
+				log_popup_lawyer_config.tooltip = drool.tooltip(
+					log_popup_lawyer,
+					mod_lawyer.tooltip_search,
+					8
+				);
+
+				return log_popup_lawyer_config.update([]);
+			}
+
+			let key = log_popup_lawyer.value.toUpperCase();
+
+			if (log_popup_lawyer_config.debounce.hasOwnProperty(key))
+				return;
+
+			log_popup_lawyer_config.debounce[key] = 1;
+
+			if (log_popup_lawyer_config.tooltip)
+				log_popup_lawyer_config.tooltip();
+
+			if (key) {
+				log_popup_lawyer_config.tooltip = drool.tooltip(
+					log_popup_lawyer,
+					mod_lawyer.tooltip_load,
+					8
+				);
+
+				mod_relay.Lawyer.get(conversation_id, 0, 32, key)(docs => {
+					delete log_popup_lawyer_config.debounce[key];
+
+					if (log_popup_lawyer.value.toUpperCase() == key) {
+						log_popup_lawyer_config.tooltip =
+							log_popup_lawyer_config.tooltip();
+
+						log_popup_lawyer_config.update(
+							docs.map(doc => doc.name)
+						);
+					}
+				});
+			}
+		}
 	};
 
-	let update_fn;
-	let update = drool.list(
-		log_popup_lawyer,
-		l,
-		(v, i) => {
-			if (!i && add) {
-				if (log_popup_lawyer.value.search(/\S/) == -1)
-					return vergil(
-						"<div style=color:var(--warning)>" +
-						"Please input a name." +
-						"</div>"
-					);
+	log_popup_lawyer.addEventListener("focus", _ => {
+		if (log_popup_lawyer.getAttribute("debounce"))
+			return;
 
-				// Use lowercase version as key/index.
-				let key = log_popup_lawyer.value.toLowerCase();
-				mod_lawyer.list[key] = [];
-				// Store real name inside.
-				mod_lawyer.list[key].name = log_popup_lawyer.value;
-				// Dump name to collection.
-				mod_lawyer.list[" "].push(log_popup_lawyer.value);
+		log_popup_lawyer.setAttribute("debounce", 1);
 
-				vergil(
-					"<div style=color:var(--success);>" +
-					"Lawyer successfully added!" +
-					"</div>",
-					1800
-				);
-			} else
+		log_popup_lawyer_config.update = drool.list(
+			log_popup_lawyer,
+			[],
+			(v, i) => {
 				log_popup_lawyer.value = v;
+				log_popup_lawyer.blur();
 
-			log_popup_lawyer
-				.removeEventListener("input", update_fn);
-			log_popup_lawyer.blur();
+				return true;
+			}
+		);
 
-			return true;
-		}
+		log_popup_lawyer_config.fn();
+	});
+
+	log_popup_lawyer.addEventListener(
+		"input",
+		log_popup_lawyer_config.fn
 	);
-	update_fn = _ => update(fn());
 
-	log_popup_lawyer.addEventListener("input", update_fn);
-});
+	log_popup_lawyer.addEventListener("keydown", event =>
+		(event.keyCode == 13 || event.keyCode == 27) ?
+			log_popup_lawyer.blur() : 0
+	);
 
-// User blurs focus from the lawyer input.
-log_popup_lawyer.addEventListener("blur", _ => {
-	if (!mod_lawyer.list[log_popup_lawyer.value.toLowerCase()])
-		log_popup_lawyer.value = "";
-});
+	log_popup_lawyer.addEventListener("blur", _ => {
+		if (log_popup_lawyer_config.tooltip)
+			log_popup_lawyer_config.tooltip =
+				log_popup_lawyer_config.tooltip();
+
+		log_popup_lawyer_config.update = null;
+
+		if (log_popup_lawyer.value) {
+			mod_loading.show();
+
+			mod_relay.Lawyer.getOne(
+				conversation_id,
+				log_popup_lawyer.value
+			)(doc => {
+				mod_loading.hide();
+
+				log_popup_lawyer.value = doc ? doc.name : "";
+
+				if (!doc)
+					vergil(
+						"<div style=color:var(--warning)>" +
+						"That lawyer doesn't exist!" +
+						"</div>",
+						2800
+					);
+			});
+		}
+
+		log_popup_lawyer.removeAttribute("debounce");
+	});
+}));
 
 lawyer_new.addEventListener("click", _ => {
 	lawyer_popup_input.value = "";

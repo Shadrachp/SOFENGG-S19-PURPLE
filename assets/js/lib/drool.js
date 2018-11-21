@@ -254,9 +254,12 @@ const drool = {};
  *
  * @param {HTMLElement} parent - The element that owns this
  * dropdown element.
+ *
  * @param {String[]} txt - The text to be displayed.
+ *
  * @param {Number} offset - The higher, the farther the tooltip
  * will be from the parent element.
+ *
  * @return {Function} when called, will forcibly destroy the
  * dropdown element.
 **/
@@ -708,7 +711,8 @@ drool.link = (parent, menu) => {
 				event.clientY
 			);
 
-		if (!drool.relate(v, menu) &&
+		if (!document.hasFocus() ||
+			!drool.relate(v, menu) &&
 			!drool.relate(v, parent))
 			d();
 	};

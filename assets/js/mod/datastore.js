@@ -1,9 +1,9 @@
 /**
- * Generators for the sidebar.
+ * A limited database (like a RAM).
  *
  * @author Llyme
 **/
-const mod_sidebar = {};
+const mod_datastore = {};
 
 /**
  * Create a generator for the given getter function.
@@ -18,33 +18,51 @@ const mod_sidebar = {};
  * not be greater than `limit`.
  *
  * @param {Function} getter - the `.get` function from `relay.js`.
- *
- * @param {Function} callback_key - this should return what the key
- * would look like in the list.
- *
- * @param {Function} callback_new - this will be called whenever a
- * new document is generated.
- *
- * @param {Function} callback_remove - this will be called whenever
- * a document is removed from the list.
 **/
-mod_sidebar.init = (space,
-					limit,
-					buffer,
-					getter,
-					callback_key,
-					callback_new,
-					callback_remove) => {
+mod_datastore.init = (space, limit, buffer, callbacks) => {
 	let list = [];
 	let dump = [];
 	let busy;
 	let skip = 0;
 
+	{
+		if (!callbacks.hasOwnProperty("sort"))
+			callbacks.sort = (a, b) => a < b;
+
+		let callback_new = callbacks.new;
+
+		callbacks.new = (doc, index) => {
+			if (list[callbacks.key(doc)])
+				return;
+
+			return callback_new(doc, index);
+		};
+	}
+
+	/**
+	 * Add to dump list (dump list is literally just for 'dumping' all the
+	 * keys in a list to sort them easily).
+	 *
+	 * @param {String} key - the key that will be used as an identifier for
+	 * data storage. This is also used for sorting (ascending order; A-Z).
+	 *
+	 * @param {Boolean|null} sort - Find a suitable index if `true` or
+	 * `null`, otherwise it will be added at the bottom of the list if
+	 * `false`.
+	 *
+	 * @return {Integer|null} - the position that should be placed into if
+	 * you want an ordered list, otherwise `null` if it should be placed
+	 * at the bottom.
+	**/
 	let dump_add = (key, sort) => {
 		let i;
+
 		// Try to sort the list if needed.
 		if ((sort == null || sort) && dump.length) {
-			for (i = 0; i < dump.length && dump[i] < key; i++);
+			for (i = 0;
+				i < dump.length &&
+				callbacks.sort(dump[i], key);
+				i++);
 
 			if (i < dump.length) {
 				dump.splice(i, 0, key);
@@ -69,19 +87,22 @@ mod_sidebar.init = (space,
 		// skipped data could be less than the buffer.
 		let len = Math.min(skip, buffer);
 
-		getter(skip - len, len)(docs => {
+		callbacks.getter(skip - len, len)(docs => {
 			skip -= docs.length;
 
 			if (dump.length + docs.length > limit)
-				dump.splice(limit - dump.length - docs.length)
-					.map(key => {
-						if (callback_remove(list[key]))
-							delete list[key];
-					});
+				dump.splice(limit - dump.length - docs.length).map(key => {
+					if (callbacks.remove(list[key]))
+						delete list[key];
+				});
 
 			docs.map(doc => {
-				let key = callback_key(doc);
-				list[key] = callback_new(doc, dump_add(key));
+				let key = callbacks.key(doc);
+
+				if (list[key])
+					return;
+
+				list[key] = callbacks.new(doc, dump_add(key));
 			});
 
 			busy = false;	
@@ -94,19 +115,24 @@ mod_sidebar.init = (space,
 	**/
 	let load_fore = _ => {
 		busy = true;
-		getter(skip + dump.length, buffer)(docs => {
+
+		callbacks.getter(skip + dump.length, buffer)(docs => {
 			skip += docs.length;
 
 			if (dump.length + docs.length > limit)
 				dump.splice(0, dump.length + docs.length - limit)
 					.map(key => {
-						if (callback_remove(list[key]))
+						if (callbacks.remove(list[key]))
 							delete list[key];
 					});
 
 			docs.map(doc => {
-				let key = callback_key(doc);
-				list[key] = callback_new(doc, dump_add(key));
+				let key = callbacks.key(doc);
+
+				if (list[key])
+					return;
+
+				list[key] = callbacks.new(doc, dump_add(key));
 			});
 
 			busy = false;
@@ -127,8 +153,7 @@ mod_sidebar.init = (space,
 		   user doesn't necessarily need to scroll at the very
 		   top/bottom to load more.
 		*/
-		let scroll = space.scrollHeight -
-			space.clientHeight;
+		let scroll = space.scrollHeight - space.clientHeight;
 		let buffer = scroll/5;
 
 		if (direction != -1 && space.scrollTop >= scroll - buffer)
@@ -141,8 +166,8 @@ mod_sidebar.init = (space,
 
 	return mod => {
 		mod.new = (doc, sort) => {
-			let key = callback_key(doc);
-			let data = callback_new(doc, dump_add(key));
+			let key = callbacks.key(doc);
+			let data = callbacks.new(doc, dump_add(key));
 
 			if (data)
 				list[key] = data;
@@ -154,39 +179,44 @@ mod_sidebar.init = (space,
 			if (dump.indexOf(key) > -1)
 				dump.splice(dump.indexOf(key), 1);
 
-			if (callback_remove(list[key]))
+			if (callbacks.remove(list[key]))
 				delete list[key];
 		};
 
 		mod.move = (key_old, key_new) => {
-			dump.splice(dump.indexOf(key_old), 1, key_new);
+			dump.splice(dump.indexOf(key_old), 1);
 
 			list[key_new] = list[key_old];
 
 			delete list[key_old];
+
+			callbacks.move(list[key_new], dump_add(key_new));
 		};
 
 		mod.get = key => list.hasOwnProperty(key) ? list[key] : null;
 
-		mod.has = key =>
-			dump.indexOf(key) > -1 &&
-			list[key] && list[key].hasOwnProperty("remove");
+		mod.has = key => list[key] != null;
 
-		getter(0, limit)(docs => {
-			docs.map(doc => {
-				let key = callback_key(doc);
+		mod.init = _ => {
+			callbacks.getter(0, limit)(docs => {
+				if (docs)
+					docs.map(doc => {
+						let key = callbacks.key(doc);
 
-				dump_add(key, false);
+						dump_add(key, false);
 
-				list[key] = callback_new(doc);
+						list[key] = callbacks.new(doc);
+					});
+
+				space.addEventListener("scroll", event => scroll());
+
+				space.addEventListener("wheel", event =>
+					scroll(event.deltaY < 0 ? -1 : 1)
+				);
 			});
+		};
 
-			space.addEventListener("scroll", event => scroll());
-
-			space.addEventListener("wheel", event =>
-				scroll(event.deltaY < 0 ? -1 : 1)
-			);
-		});
+		return mod;
 	};
 };
 

@@ -122,6 +122,12 @@ const mod_relay = {
 			 * @param {Array[Object]|null} docs - the documents you
 			 * specifically requested. `null` if nothing was found.
 			**/
+			"get",
+			"getOne"
+		],
+		Log: [
+			"new",
+			"edit",
 			"get"
 		],
 		Lawyer: [
@@ -167,7 +173,8 @@ const mod_relay = {
 			 * @param {Array[Object]|null} docs - the documents you
 			 * specifically requested. `null` if nothing was found.
 			**/
-			"get"
+			"get",
+			"getOne"
 		],
 		Code: [
 			/**
@@ -211,7 +218,8 @@ const mod_relay = {
 			 * @param {Array[Object]|null} docs - the documents you
 			 * specifically requested. `null` if nothing was found.
 			**/
-			"get"
+			"get",
+			"getOne"
 		]
 	}
 

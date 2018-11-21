@@ -5,6 +5,10 @@
  * @dependencies vergil.js, log.js, drool.js, tipper.js, sidebar.js,
  * lawyer.js
 **/
+const mod_lawyer_popup = {};
+
+mod_lawyer_popup.setConversationID = _ => _;
+
 lawyer_popup_input.addEventListener("keydown", event => {
 	if (event.keyCode == 13)
 		// Enter Key
@@ -18,59 +22,68 @@ lawyer_popup_cancel.addEventListener("click", _ =>
 	lawyer_popup.setAttribute("invisible", 1)
 );
 
-lawyer_popup_create.addEventListener("click", _ => {
-	// Name must contain SOMETHING.
-	if (!lawyer_popup_input.value ||
-		lawyer_popup_input.value.search(/\S/) == -1) return vergil(
-		"<div style=color:var(--warning)>" +
-		"Please input something." +
-		"</div>"
-	);
+{
+	let conversation_id;
 
-	if (lawyer_popup_input.value.length < 2 ||
-		lawyer_popup_input.value.length > 64) return vergil(
-		"<div style=color:var(--warning)>" +
-		"Lawyer's name must have at least <b>2 characters</b> and" +
-		" up to <b>64 characters</b> at most." +
-		"</div>"
-	);
+	mod_lawyer_popup.setConversationID = hash => conversation_id = hash;
 
-	let key = lawyer_popup_input.value.toUpperCase();
-
-	/* Check if it's in the limited datastore. This is
-	   different from the actual database which we store some of the
-	   data here so we don't have to constantly nag the database for
-	   queries.
-	*/
-	if (mod_lawyer.get(key))
-		return vergil(
+	lawyer_popup_create.addEventListener("click", _ => {
+		// Name must contain SOMETHING.
+		if (!lawyer_popup_input.value ||
+			lawyer_popup_input.value.search(/\S/) == -1) return vergil(
 			"<div style=color:var(--warning)>" +
-			"This lawyer already exists!" +
+			"Please input something." +
 			"</div>"
 		);
 
-	mod_loading.show();
+		if (lawyer_popup_input.value.length < 2 ||
+			lawyer_popup_input.value.length > 64) return vergil(
+			"<div style=color:var(--warning)>" +
+			"Lawyer's name must have at least <b>2 characters</b> and" +
+			" up to <b>64 characters</b> at most." +
+			"</div>"
+		);
 
-	mod_relay.Lawyer.new({name: lawyer_popup_input.value})(flag => {
-		mod_loading.hide();
+		let key = lawyer_popup_input.value.toUpperCase();
 
-		if (flag && mod_lawyer.new({name: lawyer_popup_input.value})) {
-			lawyer_search.value = "";
-
-			lawyer_popup.setAttribute("invisible", 1);
-
-			vergil(
-				"<div style=color:var(--success);>" +
-				"Lawyer successfully created!" +
-				"</div>",
-				1800
+		/* Check if it's in the limited datastore. This is
+		   different from the actual database which we store some of the
+		   data here so we don't have to constantly nag the database for
+		   queries.
+		*/
+		if (mod_lawyer.get(key))
+			return vergil(
+				"<div style=color:var(--warning)>" +
+				"This lawyer already exists!" +
+				"</div>"
 			);
-		} else vergil(
-			"<div style=color:var(--warning)>" +
-			"This lawyer already exists!" +
-			"</div>"
-		);
+
+		mod_loading.show();
+
+		mod_relay.Lawyer.new({
+			user: conversation_id,
+			name: lawyer_popup_input.value
+		})(flag => {
+			mod_loading.hide();
+
+			if (flag && mod_lawyer.new({name: lawyer_popup_input.value})) {
+				lawyer_search.value = "";
+
+				lawyer_popup.setAttribute("invisible", 1);
+
+				vergil(
+					"<div style=color:var(--success);>" +
+					"Lawyer successfully created!" +
+					"</div>",
+					1800
+				);
+			} else vergil(
+				"<div style=color:var(--warning)>" +
+				"This lawyer already exists!" +
+				"</div>"
+			);
+		});
 	});
-});
+}
 
 spook.return();

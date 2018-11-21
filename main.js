@@ -1,12 +1,4 @@
-const fs = require("fs");
 const {ipcMain, app, BrowserWindow, session} = require("electron");
-
-// Check if the directory exists.
-try {
-	fs.accessSync("mongodbdata");
-} catch (_) {
-	fs.mkdirSync("mongodbdata");
-}
 
 const spook = require("./assets/js/spook.js"); // The spooky framework.
 
@@ -81,7 +73,14 @@ else {
 	// Wait for all the children (AKA modules) to load.
 	spook.waitForChildren(_ => {
 		spook.database.connect("mongodb://localhost:27017/UysLawFirm",
-			_ => {
+			renew => {
+				if (renew)
+					spook.models.User.new({
+						username: "admin",
+						password: require("crypto").createHash("sha256")
+							.update("1234").digest("hex")
+					}, _ => _);
+
 				// Broadcast that we have connected to the database.
 				BrowserWindow.getAllWindows().map(v =>
 					v.webContents.send("database_connected", true)

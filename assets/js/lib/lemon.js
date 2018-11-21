@@ -9,8 +9,46 @@
  *
  * @author Llyme
 **/
-const lemon = {};
-lemon.time = {};
+const lemon = {
+	time: {}
+};
+
+/**
+ * Fix the string so that it follows the 12-hour format.
+ *
+ * If hour is less than 0 or greater than 12, it will be constrained to
+ * within range.
+ *
+ * If minute is less than 0 or greater than 59, it will be constrained to
+ * within range.
+ *
+ * If meridiem is not found, it will be set to 'AM'. Meridiem must be
+ * `AM` or `PM`, case-insensitive.
+ *
+ * @param {String} time - Time in 12-hour format.
+ *
+ * @return {String|null} - the converted format.
+**/
+lemon.time.fixStandard = time => {
+	try {
+		time = time.substr(time.search(/\d/));
+		let i = time.indexOf(":");
+
+		let hr = Math.max(1, Math.min(12, Number(time.substr(0, i))));
+
+		time = time.substr(i + 1);
+		i = time.search(/\D/);
+
+		let mn = Math.max(0, Math.min(59, Number(time.substr(
+				0,
+				i == -1 ? undefined : i
+			))));
+
+		return ("00" + hr).slice(-2) + ":" +
+			("00" + mn).slice(-2) + " " +
+			(time.search(/PM/i) > -1 ? "PM" : "AM");
+	} catch(err) {}
+};
 
 /**
  * Convert 12-hour format to 24-hour format.
@@ -20,7 +58,7 @@ lemon.time = {};
  * Should be something like `12:59 AM`. Meridiem should be
  * `AM` or `PM`, otherwise it will be processed as `AM` by
  * default if not present or incorrect.
- * @return {String | null} the converted format. If anything
+ * @return {String|null} - the converted format. If anything
  * goes wrong, it will return `null`.
 **/
 lemon.time.toMilitary = time => {
@@ -38,7 +76,7 @@ lemon.time.toMilitary = time => {
  * separated.
  *
  * @param {String} time - the time in 12-hour format.
- * @return {Array | null} index 0 is the hour, while index 1
+ * @return {Array|null} - index 0 is the hour, while index 1
  * is the minute. If anything goes wrong, it will return
  * `null`.
 **/
@@ -47,9 +85,7 @@ lemon.time.toMilitary_split = time => {
 		time = time.substr(time.search(/\d/));
 		let i = time.indexOf(":");
 
-		let hr = Math.max(1,
-				Math.min(12, Number(time.substr(0, i)))
-			);
+		let hr = Math.max(1, Math.min(12, Number(time.substr(0, i))));
 
 		time = time.substr(i + 1);
 		i = time.search(/\D/);
@@ -66,9 +102,7 @@ lemon.time.toMilitary_split = time => {
 			hr = 0;
 
 		return [hr, mn];
-	} catch(err) {
-		return null;
-	}
+	} catch(err) {}
 };
 
 /**
@@ -82,15 +116,10 @@ lemon.time.toStandard = time => {
 	try {
 		time = time.substr(time.search(/\d/));
 		let i = time.indexOf(":");
-
-		let hr = Math.max(0,
-				Math.min(23, Number(time.substr(0, i)))
-			);
+		let hr = Math.max(0, Math.min(23, Number(time.substr(0, i))));
 
 		time = time.substr(i + 1);
-
 		i = time.search(/\D/);
-
 		let mn = Math.max(0, Math.min(59, Number(time.substr(
 				0,
 				i == -1 ? undefined : i

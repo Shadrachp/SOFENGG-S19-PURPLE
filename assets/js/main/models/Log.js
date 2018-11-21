@@ -3,8 +3,13 @@
  *
  * @author Llyme
 **/
+const mongoose = require("mongoose");
 
 module.exports = models => { return {
+	client: {
+		type: mongoose.Schema.Types.ObjectId,
+		required: true
+	},
 	date: {
 		type: Date,
 		required: true
@@ -27,6 +32,13 @@ module.exports = models => { return {
 			message: "{VALUE} is not an integer."
 		}
 	},
-	lawyer: require("mongoose").Schema.Types.ObjectId,
-	code: [String]
+	lawyer: {
+		type: mongoose.Schema.Types.ObjectId,
+		required: true
+	},
+	codes: [mongoose.Schema.Types.ObjectId],
+	description: {
+		type: String,
+		default: ""
+	}
 }};

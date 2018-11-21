@@ -39,11 +39,11 @@ const mod_login = {};
 		mod_relay.User.get(
 			login_user.value,
 			login_pwrd.value
-		)(flag => {
+		)(id => {
 			// Hide the loading screen.
 			mod_loading.hide();
 
-			switch(flag) {
+			switch(id) {
 				case 0:
 					return vergil(
 						"<div style=color:var(--warning)>" +
@@ -58,7 +58,14 @@ const mod_login = {};
 						"</div>",
 						1800
 					);
-				case 2:
+				default:
+					if (!id)
+						return;
+
+					[mod_client, mod_lawyer, mod_log, mod_pref].forEach(v =>
+						v.setConversationID(id)
+					);
+
 					// Show the `space` and hide the `login` screen.
 					space.removeAttribute("hidden");
 					login.setAttribute("invisible", 1);

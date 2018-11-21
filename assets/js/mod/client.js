@@ -12,82 +12,73 @@ const mod_client = {
 };
 mod_client.list_visible.key = "";
 
-spook.waitForChildren(_ => mod_relay.waitForDatabase(_ =>
-	mod_sidebar.init(
-		client_space,
-		128,
-		64,
-		mod_relay.Client.get,
-		doc => doc.key || doc.name.toUpperCase(),
-		(doc, index) => {
-			doc.key = doc.key || doc.name.toUpperCase();
-			doc.time = doc.time == null ? 0 : doc.time;
-			doc.logs_count =
-				doc.logs_count == null ? 0 : doc.logs_count;
+mod_client.setConversationID = _ => _;
 
-			// Empty string.
+spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
+	let conversation_id;
+
+	/**
+	 * Set the conversation ID to gain access in the main process.
+	**/
+	mod_client.setConversationID = hash => {
+		conversation_id = hash;
+
+		mod_client_popup.setConversationID(hash);
+		// Fill up the list with existing documents.
+		mod_client.init();
+	};
+
+	mod_datastore.init(client_space, 128, 64, {
+		getter: (skip, limit) =>
+			mod_relay.Client.get(conversation_id, skip, limit),
+		key: doc =>
+			doc.key || doc.name.toUpperCase(),
+		new: (doc, index) => {
 			if (doc.name.search(/\S/) == -1)
 				return;
 
-			// Already created.
-			if (mod_client.has(doc.key))
-				return;
+			let key = doc.key || doc.name.toUpperCase();
 
+			if (mod_client.selected && mod_client.selected.key == key) {
+				for (let k in doc)
+					mod_client.selected[k] == doc[k];
 
-			/* Draw the client button element. Automatically select it
-			   if it was still selected after being removed when
-			   scrolling too far.
-			*/
-			let btn = q("#client_space !label");
+				mod_client.selected.key = doc.key || doc.name.toUpperCase();
+				doc = mod_client.selected;
+			} else {
+				doc.key = doc.key || doc.name.toUpperCase();
+				doc.time = doc.time == null ? 0 : doc.time;
+				doc.logs_count =
+					doc.logs_count == null ? 0 : doc.logs_count;
+				doc.log_space = q(
+					"#log !div " +
+					"class=log_space " +
+					"scroll=1 " +
+					"invisible=1"
+				)
+				doc.logs = mod_log.new(doc._id, doc.log_space);
+
+				doc.logs.init();
+			}
+
+			let btn = doc.btn = q("!label");
 			btn.innerHTML += doc.name + mod_client.pref_btn;
 
-			if (index != null)
+			if (mod_client.selected == doc)
+				btn.setAttribute("selected", 1);
+
+			if (index == null)
+				client_space.appendChild(btn);
+			else
 				client_space.insertBefore(
 					btn,
 					client_space.childNodes[index]
 				);
 
-
-			/* Set this as selected if it's still selected when it was
-			   removed earlier.
-			*/
-			if (mod_client.selected == doc.key)
-				btn.setAttribute("selected", 1);
-
-
-			// Add client's data to list.
-			let data = mod_client.get(doc.key);
-
-			if (!data)
-				data = {
-					// Space for logs for this client.
-					log_space: q(
-						"#log !div " +
-						"class=log_space " +
-						"scroll=1 " +
-						"invisible=1"
-					),
-					// All the log data for this client.
-					logs: []
-				};
-
-			data.key = doc.key;
-			data.name = doc.name;
-			data.time = doc.time;
-			data.logs_count = doc.logs_count;
-			data.btn = btn;
-			// This DOES NOT delete the document.
-			data.remove = _ => mod_client.remove(data.key);
-
-			// Tag as visible in the list.
-			mod_client.list_visible.push(doc.key);
-
-
-			// Setup button.
 			btn.addEventListener("click", event => {
 				// Clicked preference button.
 				if (event.target != btn)
-					return mod_pref.show(data.name);
+					return mod_pref.show(doc);
 
 				/* If there was a previously selected client, hide
 				   their log interface.
@@ -95,25 +86,24 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ =>
 				let prev = mod_client.selected;
 
 				if (prev) {
-					prev = mod_client.get(prev);
-
-					if (prev.hasOwnProperty("remove")) {
+					if (prev.hasOwnProperty("btn")) {
 						prev.log_space.setAttribute("invisible", 1);
 						prev.btn.removeAttribute("selected", 1);
 					} else
-						mod_client.remove(mod_client.selected);
+						// Remove any remnants from the previous document.
+						prev.log_space.remove();
 				}
 
 
 				// Setup the information interface.
-				info_name.innerHTML = data.name;
-				mod_info.stats_time_update(data.time);
-				mod_info.stats_log_update(data.logs_count);
+				info_name.innerHTML = doc.name;
+				mod_info.stats_time_update(doc.time);
+				mod_info.stats_log_update(doc.logs_count);
 
 
 				// Tag as selected and show its log interface.
-				mod_client.selected = data.key;
-				data.log_space.removeAttribute("invisible");
+				mod_client.selected = doc;
+				doc.log_space.removeAttribute("invisible");
 				btn.setAttribute("selected", 1);
 			});
 
@@ -131,29 +121,37 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ =>
 			client_new.removeAttribute("glow");
 			space_empty.setAttribute("invisible", 1);
 			info.removeAttribute("invisible");
-			log_ctrl.removeAttribute("invisible");
+			ctrl_log.removeAttribute("invisible");
 
-			return data;
+			return doc;
 		},
-		data => {
-			if (data.hasOwnProperty("btn"))
-				data.btn.remove();
+		remove: doc => {
+			doc.btn.remove();
 
 			/* Only delete the visual stuff when this is the selected
 			   client.
 			*/
-			if (mod_client.selected != data.key ||
-				!data.hasOwnProperty("remove")) {
-				data.log_space.remove();
+			if (mod_client.selected != doc.key)
+				doc.log_space.remove();
+			else
+				delete doc.btn;
 
-				return true;
-			} else {
-				delete data.remove;
-				delete data.btn;
-			}
+			return true;
+		},
+		move: (doc, index) => {
+			if (!doc.hasOwnProperty("btn"))
+				return;
+
+			if (index == null)
+				client_space.appendChild(doc.btn);
+			else
+				client_space.insertBefore(
+					doc.btn,
+					client_space.childNodes[index]
+				);
 		}
-	)(mod_client)
-));
+	})(mod_client);
+}));
 
 client_search.addEventListener("input", _ => {
 	let k = client_search.value.toUpperCase();

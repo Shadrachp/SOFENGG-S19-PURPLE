@@ -6,111 +6,112 @@
 **/
 const mod_log = {};
 
-/**
- * Create a new entry (GUI and data) for the client's log
- * interface.
- *
- * @param {String} client - the client's name in lowercase form.
- * This is used as the ID (temporary until database is built).
- * @param {String} date - date provided in string format.
- * @param {Array[String]} code - a list of codes provided.
- * @param {String} time_start - starting time for the log.
- * @param {String} time_end - ending time for the log.
- * @param {String} lawyer - the lawyer involved with the log.
- * @param {String} description - additional information for the
- * log.
-**/
-mod_log.space_new = (client,
-					 date,
-					 code,
-					 time_start,
-					 time_end,
-					 lawyer,
-					 description) => {
-	let client_data = mod_client.get(client);
-	let log_space = client_data.log_space;
-	let root = q("!div");
+mod_log.setConversationID =
+	mod_log.get =
+	mod_log.new = _ => _;
 
-	log_space.insertBefore(root, log_space.childNodes[0]);
+spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
+	let conversation_id;
 
-	let data = {
-		date,
-		code,
-		time: [],
-		lawyer,
-		description
+	mod_log.setConversationID = hash => {
+		conversation_id = hash;
+
+		mod_log_popup.setConversationID(hash);
 	};
 
-	[time_start, time_end].map(v => {
-		v = lemon.time.toMilitary_split(v);
+	mod_log.new = (client_id, log_space) =>
+		mod_datastore.init(log_space, 128, 64, {
+			getter: (skip, limit) =>
+				mod_relay.Log.get(client_id, skip, limit),
+			key: doc => doc._id,
+			new: (doc, index) => {
+				doc.date = new Date(doc.date);
 
-		data.time.push(!v ? 0 : (v[0]*60 + v[1]));
-	});
+				let root = doc.root = q("!div");
 
-	client_data.time += data.time[1] - data.time[0];
-	client_data.logs_count++;
-	client_data.logs.push(data);
+				if (index != null)
+					log_space.insertBefore(
+						root,
+						log_space.childNodes[index]
+					);
+				else
+					log_space.appendChild(root);
 
-	root.addEventListener("click", _ =>
-		(root.getAttribute("expand") ?
-		root.removeAttribute("expand") :
-		root.setAttribute("expand", 1))
-	);
-
-	let l = {
-		log_space_time: time_start + " to " + time_end,
-		log_space_date: date
-	};
-
-	for (let i in l) {
-		let v = q("!label class=" + i);
-		v.innerHTML = l[i];
-		root.appendChild(v);
-	}
-
-	let div = q("!div");
-	root.appendChild(div);
-
-	l = {
-		log_space_lawyer:
-			lawyer ? "<label>Lawyer</label>" + lawyer :
-			"<label style=color:var(--warning)>No Lawyer</label>",
-		log_space_code:
-			code ? "<label>Code</label>" +
-				code.map(v => "<label>" + v + "</label>")
-					.join("") :
-			"<label style=color:var(--warning)>No Code</label>"
-	};
-
-	for (let i in l) {
-		let v = q("!label class=" + i);
-		v.innerHTML = l[i];
-		div.appendChild(v);
-	}
-
-	if (description) {
-		let v = q("!div class=log_space_desc");
-		v.innerHTML = description;
-		div.appendChild(v);
-	}
+				root.addEventListener("click", _ =>
+					root.getAttribute("expand") ?
+					root.removeAttribute("expand") :
+					root.setAttribute("expand", 1)
+				);
 
 
-	/* Update the information interface. */
-	mod_info.stats_time_update(client_data.time);
-	mod_info.stats_log_update(client_data.logs_count);
+				// Date and time.
+
+				let time = doc.time_end - doc.time_start;
+				let l = {
+					log_space_time: mod_info.stats_time_convert(
+						doc.time_end - doc.time_start
+					),
+					log_space_date: doc.date.toLocaleDateString()
+				};
+
+				for (let i in l) {
+					let v = q("!label class=" + i);
+					v.innerHTML = l[i];
+					root.appendChild(v);
+				}
 
 
-	/* Hide the popup window and send a notification to the
-	   user.
-	*/
-	log_popup.setAttribute("invisible", 1);
+				// Lawyer, codes, and description.
 
-	vergil(
-		"<div style=color:var(--success);>" +
-		"Log successfully created!" +
-		"</div>",
-		1800
-	)
-};
+				let div = q("!div");
+				root.appendChild(div);
+
+				l = {
+					log_space_lawyer: [
+						"label",
+						doc.lawyer ? "<label>Lawyer</label>" +
+							doc.lawyer.name :
+						"<label style=color:var(--warning)>No Lawyer" +
+						"</label>"
+					],
+					log_space_code: [
+						"label",
+						doc.codes ? "<label>Code</label>" +
+							doc.codes.map(doc =>
+								"<label>" + doc.code + "</label>"
+							).join("") :
+						"<label style=color:var(--warning)>No Code</label>"
+					]
+				};
+
+				if (doc.description)
+					l.log_space_desc = ["div", doc.description];
+
+				for (let i in l) {
+					let v = q("!" + l[0] + " class=" + i);
+					v.innerHTML = l[i][1];
+
+					div.appendChild(v);
+				}
+
+				return doc;
+			},
+			remove: doc => {
+				doc.root.remove();
+
+				return true;
+			},
+			move: (doc, index) => {
+				if (index == null)
+					log_space.appendChild(doc.btn);
+				else
+					log_space.insertBefore(
+						doc.btn,
+						log_space.childNodes[index]
+					);
+			},
+			sort: (a, b) => a > b
+		})({});
+}));
 
 spook.return();

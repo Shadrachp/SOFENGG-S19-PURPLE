@@ -57,7 +57,6 @@ code_popup_create.addEventListener("click", _ => {
 		code: key,
 		description: code_popup_desc.value
 	};
-	console.log(data);
 
 	mod_relay.Code.new(data)(flag => {
 		mod_loading.hide();

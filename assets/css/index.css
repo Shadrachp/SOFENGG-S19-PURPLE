@@ -50,13 +50,13 @@ dim {
 	--background-accent1: #fff;
 	/* Color for all lawyers things.
 	*/
-	--accent_client: #3f9fff;
+	--accent-client: #3f9fff;
 	/* Color for all lawyers things.
 	*/
-	--accent_lawyer: #0f6f9f;
+	--accent-lawyer: #0f6f9f;
 	/* Color for all lawyers things.
 	*/
-	--accent_code: #6f3f9f;
+	--accent-code: #6f3f9f;
 	/*
 	*/
 	--submit: #0f9f3f;
@@ -116,6 +116,10 @@ dim {
 
 /*-- Modifiers --*/
 
+[small] {
+	font-size: small;
+}
+
 [glow] {
 	animation: glow 2s infinite;
 }
@@ -128,8 +132,15 @@ dim {
 	display: none !important;
 }
 
+[hidden] * {
+	display: none !important;
+}
+
 [invisible] {
 	opacity: 0 !important;
+}
+
+[invisible] * {
 }
 
 [invisible],
@@ -462,7 +473,7 @@ smaller {
 /*-- Client --*/
 
 #client_new {
-	background-color: var(--accent_client);
+	background-color: var(--accent-client);
 }
 
 
@@ -471,7 +482,7 @@ smaller {
 /*-- Lawyer --*/
 
 #lawyer_new {
-	background-color: var(--accent_lawyer);
+	background-color: var(--accent-lawyer);
 }
 
 
@@ -486,7 +497,7 @@ smaller {
 #lawyer_popup > div > label {
 	display: block;
 	margin-top: 8px;
-	color: var(--accent_lawyer);
+	color: var(--accent-lawyer);
 	text-align: center;
 	font-size: 20px;
 	font-weight: lighter;
@@ -516,7 +527,7 @@ smaller {
 /*-- Codes --*/
 
 #code_new {
-	background-color: var(--accent_code);
+	background-color: var(--accent-code);
 }
 
 #code_space > label {
@@ -528,7 +539,7 @@ smaller {
 	padding: 2px 4px;
 	border-radius: 4px;
 	color: #fff;
-	background-color: var(--accent_code);
+	background-color: var(--accent-code);
 	pointer-events: none;
 }
 
@@ -542,7 +553,7 @@ smaller {
 
 #code_popup> div > label:first-child {
 	margin-left: 0;
-	color: var(--accent_code);
+	color: var(--accent-code);
 	text-align: center;
 	font-size: 20px;
 	font-weight: lighter;
@@ -631,33 +642,6 @@ smaller {
 	font-size: 14px;
 }
 
-#info_ctrl {
-	position: absolute;
-	display: block;
-	bottom: 0;
-	width: calc(100% - 16px);
-	margin-left: 8px;
-	margin-bottom: 8px;
-}
-
-#info_ctrl > * {
-	display: block;
-	width: 100%;
-	padding: 8px;
-	font-size: 14px;
-	margin-top: 8px;
-}
-
-#info_ctrl_bill {
-	color: #fff;
-	background-color: var(--submit);
-}
-
-#info_ctrl_pref {
-	color: #fff;
-	background-color: #6f6f6f;
-}
-
 
 
 
@@ -701,15 +685,15 @@ smaller {
 }
 
 #menu_clients {
-	background-color: var(--accent_client);
+	background-color: var(--accent-client);
 }
 
 #menu_lawyers {
-	background-color: var(--accent_lawyer);
+	background-color: var(--accent-lawyer);
 }
 
 #menu_codes {
-	background-color: var(--accent_code);
+	background-color: var(--accent-code);
 }
 
 
@@ -833,45 +817,73 @@ smaller {
 
 
 
-/*-- Log --*/
+/*-- ctrl --*/
 
-#log {
+#ctrl {
 	position: absolute;
 	top: 0;
 	left: 184px;
 	width: calc(100% - 216px);
-	height: calc(100% - 32px);
-	padding: 16px;
+	height: 32px;
+	padding-top: 16px;
+	padding-left: 16px;
 	border-top-left-radius: 16px;
-	border-bottom-left-radius: 16px;
 	background-color: var(--background-accent0);
 }
 
-#log_ctrl > * {
+#ctrl > button {
 	height: 32px;
-	font-size: 14px;
 }
 
-#log_ctrl > *:not(:last-child) {
-	margin-right: 16px;
+#ctrl > button:not(:first-child) {
+	margin-left: 16px;
 }
 
-#log_ctrl_new {
+#ctrl_log {
 	background-color: var(--info);
 	color: #fff;
 }
 
-#log_ctrl_sort {
-	background-color: #6f6f6f;
+#ctrl_bill {
+	background-color: #0f7f3f;
 	color: #fff;
+}
+
+#ctrl_pref {
+	border-radius: 16px;
 	float: right;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+#ctrl_pref:hover {
+	transform: rotateZ(45deg);
+}
+
+#ctrl_pref:active {
+	filter: brightness(60%);
+	transition: all 0.1s;
+}
+
+
+
+
+/*-- Log --*/
+
+#log {
+	position: absolute;
+	top: 64px;
+	left: 200px;
+	width: calc(100% - 216px);
+	height: calc(100% - 72px);
 }
 
 .log_space {
 	position: absolute;
-	top: 64px;
-	width: calc(100% - 32px);
-	height: calc(100% - 72px);
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 	overflow: hidden;
 	overflow-y: auto;
 	transition: all 0.2s;
@@ -1081,14 +1093,14 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 }
 
 #log_popup_code label:first-child {
-	background-color: var(--accent_code);
+	background-color: var(--accent-code);
 	color: #fff;
 	transition: all 0.2s;
 }
 
 #log_popup_code label:first-child:focus {
 	background-color: #fff;
-	box-shadow: 0 0 4px var(--accent_code);
+	box-shadow: 0 0 4px var(--accent-code);
 	color: #000;
 	padding: 4px 10px;
 	cursor: text;
@@ -1146,7 +1158,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 #client_popup > div > label {
 	display: block;
 	margin-top: 8px;
-	color: var(--accent_client);
+	color: var(--accent-client);
 	text-align: center;
 	font-size: 20px;
 	font-weight: lighter;

@@ -16,8 +16,7 @@ mod_info.stats_time_convert = n => {
 
 	let f = (v, i) => {
 		if (i)
-			txt = i + (i > 1 ? v + "s" : v) +
-				(txt ? ", " : "") + txt;
+			txt = i + (i > 1 ? v + "s" : v) + (txt ? ", " : "") + txt;
 	};
 
 	let l = {

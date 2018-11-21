@@ -25,16 +25,19 @@
 			>
 		</div>
 
-		<!-- All work logs for the currently selected client. -->
-		<div id=log>
-			<div id=log_ctrl invisible>
-				<button id=log_ctrl_new
-					button="0">New Log</button>
-				<button id=log_ctrl_sort
-					button="0"
-					hidden>Sort by Date</button>
-			</div>
+		<div id=ctrl>
+			<button id=ctrl_log
+				button="0"
+				invisible
+			>New Log</button><button id=ctrl_bill
+				button="0"
+				invisible
+			>Billing</button>
+			<img id=ctrl_pref src=../img/preferences.png draggable=false>
 		</div>
+
+		<!-- All work logs for the currently selected client. -->
+		<div id=log></div>
 
 		<label id=space_empty>There's nothing here...<br><small>Start by creating a new client!</small><br><smaller>Click the glowing button from the left to start.</smaller></label>
 
@@ -46,16 +49,6 @@
 				<label id=info_stats_time></label>
 				<label>Total Logs</label>
 				<label id=info_stats_log></label>
-			</div>
-			<div id=info_ctrl>
-				<button
-					id=info_ctrl_bill
-					button="0"
-				>Billing</button>
-				<button
-					id=info_ctrl_pref
-					button="0"
-				>Preferences</button>
 			</div>
 		</div>
 

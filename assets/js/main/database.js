@@ -25,10 +25,19 @@ const database = {
 		// Make this function a one-time only.
 		delete database.connect;
 
+		let renew = false;
+
+		try {
+			fs.accessSync("mongodbdata");
+		} catch (_) {
+			fs.mkdirSync("mongodbdata");
+			renew = true;
+		}
+
 		mongoose.connection.once("open", _ => {
 			database.connected = true;
 
-			callback();
+			callback(renew);
 		});
 
 		let f = _ => {

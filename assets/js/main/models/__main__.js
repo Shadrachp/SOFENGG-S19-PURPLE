@@ -6,7 +6,6 @@
 **/
 const mongoose = require("mongoose");
 
-
 const models = {};
 
 
@@ -21,10 +20,7 @@ const operations = {
 	**/
 	new: (props, callback, model) => { try {
 		new model(props).save().then(
-			doc => {
-				if (callback)
-					callback(doc);
-			}
+			doc => callback(doc)
 		);
 	} catch(_) {
 		callback();

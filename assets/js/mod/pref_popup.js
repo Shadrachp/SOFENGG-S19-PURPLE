@@ -6,10 +6,15 @@
 **/
 const mod_pref = {};
 
+mod_pref.setConversationID = _ => _;
+
 {
+	let conversation_id;
+
+	mod_pref.setConversationID = hash => conversation_id = hash;
+
 	// The client that is being modified by the preferences window.
-	let target = null;
-	let target_upper = null;
+	let target;
 
 	/**
 	 * Show the preference window and set the target. This is the only
@@ -19,22 +24,20 @@ const mod_pref = {};
 	 * Put the actual name (not the one with all uppercase) since it
 	 * also sets the input value with this.
 	**/
-	mod_pref.show = name => {
-		target = name;
-		target_upper = name.toUpperCase();
+	mod_pref.show = doc => {
+		target = doc;
+		pref_popup_name.value = doc.name;
 
 		pref_popup.removeAttribute("invisible");
-		pref_popup_name.value = name;
 	};
 
 	pref_popup_name.addEventListener("change", _ => {
 		let fn = txt => {
-			pref_popup_name.value = target;
+			pref_popup_name.value = target.name;
 
 			vergil(txt);
 		};
 
-		// Name must contain SOMETHING.
 		if (!pref_popup_name.value &&
 			pref_popup_name.value.search(/\S/) == -1) return fn(
 			"<label style=color:var(--warning)>" +
@@ -53,7 +56,8 @@ const mod_pref = {};
 		mod_loading.show();
 
 		mod_relay.Client.edit(
-			target,
+			conversation_id,
+			target.key,
 			{
 				name: pref_popup_name.value
 			}
@@ -64,21 +68,16 @@ const mod_pref = {};
 				let key = pref_popup_name.value.toUpperCase();
 
 				// Migrate data to new name.
-				let data = mod_client.get(target_upper);
-				data.name = pref_popup_name.value;
-				data.key = key;
 
-				mod_client.move(target_upper, key);
+				mod_client.move(target.key, key);
 
-				if (data.hasOwnProperty("btn"))
-					data.btn.innerHTML =
+				target.key = key;
+				target.name = pref_popup_name.value;
+
+				if (target.hasOwnProperty("btn"))
+					target.btn.innerHTML =
 						pref_popup_name.value +
 						mod_client.pref_btn;
-
-
-				// Select the new name.
-				target = info_name.innerHTML = pref_popup_name.value;
-				target_upper = mod_client.selected = key;
 
 				vergil(
 					"<label style=color:var(--success)>" +
@@ -97,5 +96,9 @@ const mod_pref = {};
 pref_popup_close.addEventListener("click", _ => {
 	pref_popup.setAttribute("invisible", 1);
 });
+
+ctrl_pref.addEventListener("click", _ =>
+	mod_pref.show(mod_client.selected)
+);
 
 spook.return();

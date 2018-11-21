@@ -71,7 +71,7 @@ spook.load([
 	"mod/loading",
 	"mod/relay",
 	"mod/menu",
-	"mod/sidebar",
+	"mod/datastore",
 	"mod/cosmetics",
 	"mod/client",
 	"mod/client_popup",

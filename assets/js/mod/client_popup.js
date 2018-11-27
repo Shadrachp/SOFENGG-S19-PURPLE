@@ -27,9 +27,10 @@ client_popup_cancel.addEventListener("click", _ =>
 	mod_client_popup.setConversationID = hash => conversation_id = hash;
 
 	client_popup_create.addEventListener("click", _ => {
+		client_popup_input.value = client_popup_input.value.trim();
+
 		// Name must contain SOMETHING. Don't make fun of me, please :(
-		if (!client_popup_input.value ||
-			client_popup_input.value.search(/\S/) == -1) return vergil(
+		if (!client_popup_input.value) return vergil(
 			"<div style=color:var(--warning)>" +
 			"Please input something." +
 			"</div>"
@@ -62,13 +63,20 @@ client_popup_cancel.addEventListener("click", _ =>
 		mod_relay.Client.new({
 			user: conversation_id,
 			name: client_popup_input.value
-		})(flag => {
+		})(_id => {
 			mod_loading.hide();
 
-			if (flag && mod_client.new({name: client_popup_input.value})) {
+			if (_id) {
+				let doc = mod_client.new({name: client_popup_input.value});
+
+				if (!doc)
+					return;
+
+				doc._id = _id;
+
 				client_search.value = "";
 
-				mod_client.get(key).btn.click();
+				doc.btn.click();
 				client_popup.setAttribute("invisible", 1);
 
 				vergil(

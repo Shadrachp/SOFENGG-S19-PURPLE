@@ -86,7 +86,8 @@ mod_log_popup.setConversationID = _ => _;
 
 			if (txt.length)
 				return vergil(
-					"<div style=color:var(--warning);text-align:left;>" +
+					"<div " +
+					"style=color:var(--warning);text-align:left;>" +
 					"Please fill up the entire form.<small>" + txt +
 					"</small></div>",
 					2600
@@ -121,6 +122,11 @@ mod_log_popup.setConversationID = _ => _;
 
 				client.time += data.time_end - data.time_start;
 				client.logs_count++;
+
+				mod_client.edit(client.name, {
+					time: client.time,
+					logs_count: client.logs_count
+				})(_ => _);
 
 				client.logs.new(data, true);
 

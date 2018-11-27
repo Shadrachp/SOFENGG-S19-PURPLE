@@ -85,7 +85,10 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 				};
 
 				if (doc.description)
-					l.log_space_desc = ["div", doc.description];
+					l.log_space_desc = [
+						"div",
+						doc.description.replace(/\n/g, "<br>")
+					];
 
 				for (let i in l) {
 					let v = q("!" + l[0] + " class=" + i);

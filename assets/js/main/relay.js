@@ -119,11 +119,11 @@ let filter = {
 						event.sender.send(
 							channel,
 							id,
-							doc ? true : false
+							doc && doc._id.toString()
 						)
 					);
 				} else
-					event.sender.send(channel, id, false);
+					event.sender.send(channel, id);
 			});
 		},
 
@@ -149,11 +149,11 @@ let filter = {
 			});
 		},
 
-		get: (event, id, hash, skip, limit, channel) => {
+		get: (event, id, hash, skip, limit, filter, channel) => {
 			if (conversation.hash != hash)
 				return event.sender.send(channel, id);
 
-			spook.models.Client.aggregate([{
+			let pipeline = [{
 				$match: {
 					user: conversation.id
 				}
@@ -164,7 +164,7 @@ let filter = {
 					},
 					name: 1,
 					time: 1,
-					log_count: 1
+					logs_count: 1
 				}
 			}, {
 				// Make an uppercased version.
@@ -182,7 +182,12 @@ let filter = {
 			}, {
 				// Limit results (excluding skipped stuff).
 				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
-			}]).then(docs =>
+			}];
+
+			if (filter)
+				pipeline[0].$match.name = new RegExp(filter, "i");
+
+			spook.models.Client.aggregate(pipeline).then(docs =>
 				event.sender.send(channel, id, docs)
 			);
 		},
@@ -211,7 +216,13 @@ let filter = {
 
 	Log: {
 		new: (event, id, properties, channel) => {
-			properties._id = new ObjectId(properties._id);
+			console.log(properties);
+
+			properties.client = new ObjectId(properties.client);
+			properties.lawyer = new ObjectId(properties.lawyer);
+			properties.codes.forEach((v, i) =>
+				properties.codes[i] = new ObjectId(v)
+			);
 
 			spook.models.Log.new(properties, doc =>
 				event.sender.send(
@@ -335,11 +346,11 @@ let filter = {
 						event.sender.send(
 							channel,
 							id,
-							doc ? true : false
+							doc && doc._id.toString()
 						)
 					);
 				} else
-					event.sender.send(channel, id, false);
+					event.sender.send(channel, id);
 			});
 		},
 
@@ -369,10 +380,9 @@ let filter = {
 			if (conversation.hash != hash)
 				return event.sender.send(channel, id);
 
-			spook.models.Lawyer.aggregate([{
+			let pipeline = [{
 				$match: {
-					user: conversation.id,
-					name: new RegExp(filter, "i")
+					user: conversation.id
 				}
 			}, {
 				// We only need the name.
@@ -398,7 +408,12 @@ let filter = {
 			}, {
 				// Limit results (excluding skipped stuff).
 				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
-			}]).then(docs =>
+			}];
+
+			if (filter)
+				pipeline[0].$match.name = new RegExp(filter, "i");
+
+			spook.models.Lawyer.aggregate(pipeline).then(docs =>
 				event.sender.send(channel, id, docs)
 			);
 		},
@@ -432,11 +447,11 @@ let filter = {
 						event.sender.send(
 							channel,
 							id,
-							doc ? true : false
+							doc && doc._id.toString()
 						)
 					);
 				else
-					event.sender.send(channel, id, false);
+					event.sender.send(channel, id);
 			}),
 
 		edit: (event, id, code, properties, channel) =>
@@ -452,15 +467,8 @@ let filter = {
 					event.sender.send(channel, id, false);
 			}),
 
-		get: (event, id, skip, limit, filter, channel) =>
-			spook.models.Code.aggregate([{
-				$match: {
-					$or: [
-						{ code: new RegExp(filter, "i") },
-						{ description: new RegExp(filter, "i") }
-					]
-				}
-			}, {
+		get: (event, id, skip, limit, filter, channel) => {
+			let pipeline = [{
 				$project: {
 					_id: {
 						$toString: "$_id"
@@ -476,9 +484,22 @@ let filter = {
 				$skip: skip != null ? (skip < 0 ? 0 : skip) : 0
 			}, {
 				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
-			}]).then(docs =>
+			}];
+
+			if (filter)
+				pipeline.unshift({
+					$match: {
+						$or: [
+							{ code: new RegExp(filter, "i") },
+							{ description: new RegExp(filter, "i") }
+						]
+					}
+				});
+
+			spook.models.Code.aggregate(pipeline).then(docs =>
 				event.sender.send(channel, id, docs)
-			),
+			);
+		},
 
 		getOne: (event, id, key, channel) => {
 			key = new RegExp("^" + key + "$", "i");

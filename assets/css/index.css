@@ -57,9 +57,12 @@ dim {
 	/* Color for all lawyers things.
 	*/
 	--accent-code: #6f3f9f;
-	/*
+	/* Green submit buttons.
 	*/
 	--submit: #0f9f3f;
+	/* Dark cancel buttons.
+	*/
+	--cancel: #3f3f3f;
 }
 
 
@@ -117,7 +120,7 @@ dim {
 /*-- Modifiers --*/
 
 [small] {
-	font-size: small;
+	font-size: small !important;
 }
 
 [glow] {
@@ -141,6 +144,7 @@ dim {
 }
 
 [invisible] * {
+	opacity: 0 !important;
 }
 
 [invisible],
@@ -269,7 +273,7 @@ smaller {
 }
 
 [scroll="0"]::-webkit-scrollbar-thumb {
-	background-color: #3f3f3f;
+	background-color: var(--cancel);
 	border-radius: 4px;
 }
 
@@ -425,6 +429,47 @@ smaller {
 
 
 
+/*-- Logout --*/
+
+#logout_popup > div > label {
+	display: block;
+	margin: 0 48px;
+	margin-top: 24px;
+	font-size: 20px;
+	font-weight: lighter;
+}
+
+#logout_popup sub {
+	display: block;
+	margin: 16px 48px;
+	margin-top: 24px;
+	text-align: center;
+	font-size: 18px;
+	font-weight: lighter;
+	color: var(--success);
+}
+
+#logout_popup button {
+	margin: 16px 32px;
+	padding-left: 24px;
+	padding-right: 24px;
+	height: 32px;
+}
+
+#logout_popup_no {
+	color: #fff;
+	background-color: var(--cancel);
+}
+
+#logout_popup_yes {
+	color: #fff;
+	background-color: var(--info);
+	float: right;
+}
+
+
+
+
 
 /*-- Space --*/
 
@@ -479,6 +524,17 @@ smaller {
 
 
 
+/*-- `client_space` --*/
+
+#client_space > label {
+	width: calc(100% - 48px);
+	padding-right: 30px;
+}
+
+
+
+
+
 /*-- Lawyer --*/
 
 #lawyer_new {
@@ -512,7 +568,7 @@ smaller {
 
 #lawyer_popup_cancel {
 	color: #fff;
-	background-color: #3f3f3f;
+	background-color: var(--cancel);
 }
 
 #lawyer_popup_create {
@@ -580,7 +636,7 @@ smaller {
 
 #code_popup_cancel {
 	color: #fff;
-	background-color: #3f3f3f;
+	background-color: var(--cancel);
 }
 
 #code_popup_create {
@@ -797,9 +853,10 @@ smaller {
 }
 
 .sidebar_pref {
+	position: absolute;
 	display: none;
-	margin-top: -4px;
-	margin-right: -8px;
+	right: 10px;
+	margin-top: -20px;
 	float: right;
 	transition: all 0.2s;
 }
@@ -831,11 +888,15 @@ smaller {
 	background-color: var(--background-accent0);
 }
 
-#ctrl > button {
+#ctrl div {
+	display: inline;
+}
+
+#ctrl button {
 	height: 32px;
 }
 
-#ctrl > button:not(:first-child) {
+#ctrl button:not(:first-child) {
 	margin-left: 16px;
 }
 
@@ -849,20 +910,27 @@ smaller {
 	color: #fff;
 }
 
-#ctrl_pref {
+#ctrl img {
+	margin-right: 24px;
 	border-radius: 16px;
 	float: right;
 	cursor: pointer;
 	transition: all 0.2s;
 }
 
-#ctrl_pref:hover {
-	transform: rotateZ(45deg);
+#ctrl img:hover {
+	filter: brightness(60%);
 }
 
-#ctrl_pref:active {
+#ctrl img:active {
 	filter: brightness(60%);
+	transform: scale(0.9);
 	transition: all 0.1s;
+}
+
+img#ctrl_logout {
+	margin-right: 0;
+	border-radius: 0;
 }
 
 
@@ -1137,7 +1205,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 
 #log_popup_ctrl_cancel {
 	color: #fff;
-	background-color: #3f3f3f;
+	background-color: var(--cancel);
 }
 
 #log_popup_ctrl_submit {
@@ -1173,7 +1241,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 
 #client_popup_cancel {
 	color: #fff;
-	background-color: #3f3f3f;
+	background-color: var(--cancel);
 }
 
 #client_popup_create {

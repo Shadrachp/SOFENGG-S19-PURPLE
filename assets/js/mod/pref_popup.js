@@ -38,8 +38,9 @@ mod_pref.setConversationID = _ => _;
 			vergil(txt);
 		};
 
-		if (!pref_popup_name.value &&
-			pref_popup_name.value.search(/\S/) == -1) return fn(
+		pref_popup_name.value = pref_popup_name.value.trim();
+
+		if (!pref_popup_name.value) return fn(
 			"<label style=color:var(--warning)>" +
 			"Please input something." +
 			"</label>"
@@ -96,9 +97,5 @@ mod_pref.setConversationID = _ => _;
 pref_popup_close.addEventListener("click", _ => {
 	pref_popup.setAttribute("invisible", 1);
 });
-
-ctrl_pref.addEventListener("click", _ =>
-	mod_pref.show(mod_client.selected)
-);
 
 spook.return();

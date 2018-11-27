@@ -7,10 +7,8 @@
 const mod_client = {
 	pref_btn: "<img class=sidebar_pref " +
 		"src=../img/sidebar_pref.png " +
-		"draggable=false>",
-	list_visible: []
+		"draggable=false>"
 };
-mod_client.list_visible.key = "";
 
 mod_client.setConversationID = _ => _;
 
@@ -28,9 +26,20 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		mod_client.init();
 	};
 
+	mod_client.edit = (name, properties) => mod_relay.Client.edit(
+		conversation_id,
+		name,
+		properties
+	);
+
 	mod_datastore.init(client_space, 128, 64, {
 		getter: (skip, limit) =>
-			mod_relay.Client.get(conversation_id, skip, limit),
+			mod_relay.Client.get(
+				conversation_id,
+				skip,
+				limit,
+				client_search.value
+			),
 		key: doc =>
 			doc.key || doc.name.toUpperCase(),
 		new: (doc, index) => {
@@ -121,7 +130,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			client_new.removeAttribute("glow");
 			space_empty.setAttribute("invisible", 1);
 			info.removeAttribute("invisible");
-			ctrl_log.removeAttribute("invisible");
+			ctrl_logs.removeAttribute("invisible");
 
 			return doc;
 		},
@@ -131,7 +140,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			/* Only delete the visual stuff when this is the selected
 			   client.
 			*/
-			if (mod_client.selected != doc.key)
+			if (mod_client.selected != doc)
 				doc.log_space.remove();
 			else
 				delete doc.btn;
@@ -149,37 +158,20 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 					doc.btn,
 					client_space.childNodes[index]
 				);
+		},
+		flush: _ => {
+			if (!mod_client.selected)
+				return;
+
+			mod_client.selected.log_space.remove();
+			mod_client.selected = null;
 		}
 	})(mod_client);
 }));
 
 client_search.addEventListener("input", _ => {
-	let k = client_search.value.toUpperCase();
-
-	if (k.search(new RegExp(mod_client.list_visible.key)) != -1) {
-		mod_client.list_visible.key = "^" + k;
-
-		mod_client.list_visible = mod_client.list_visible.filter(
-			v => {
-				let d = v.indexOf(k) != -1;
-
-				if (!d)
-					mod_client.list[v].btn.style.display = "none";
-
-				return d;
-			}
-		);
-	} else {
-		mod_client.list_visible = [];
-
-		for (let v in mod_client.list) if (v.indexOf(k) != -1) {
-			mod_client.list_visible.push(v);
-			mod_client.list[v].btn.style.display = "block";
-		} else
-			mod_client.list[v].btn.style.display = "none";
-	}
-
-	mod_client.list_visible.key = "^" + k;
+	mod_client.flush();
+	mod_client.init();
 });
 
 client_new.addEventListener("click", _ => {
@@ -188,6 +180,10 @@ client_new.addEventListener("click", _ => {
 	client_popup.removeAttribute("invisible");
 	client_popup_input.focus();
 });
+
+ctrl_pref.addEventListener("click", _ =>
+	mod_pref.show(mod_client.selected)
+);
 
 tipper(client_new, "New Client");
 

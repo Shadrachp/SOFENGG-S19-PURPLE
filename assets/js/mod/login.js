@@ -74,7 +74,7 @@ const mod_login = {};
 					   another user tries to login again in the same
 					   window.
 					*/
-					login_user.value = login_pwrd = "";
+					login_user.value = login_pwrd.value = "";
 
 					return;
 			}
@@ -87,5 +87,38 @@ const mod_login = {};
 	login_pwrd.addEventListener("keydown", input);
 	login_acpt.addEventListener("click", accept);
 }
+
+ctrl_logout.addEventListener("click", _ =>
+	logout_popup.removeAttribute("invisible")
+);
+
+logout_popup_no.addEventListener("click", _ =>
+	logout_popup.setAttribute("invisible", 1)
+);
+
+logout_popup_yes.addEventListener("click", _ => {
+	logout_popup.setAttribute("invisible", 1);
+	login.removeAttribute("invisible");
+
+	[mod_client, mod_lawyer, mod_log, mod_pref].forEach(v =>
+		v.setConversationID()
+	);
+	[mod_client, mod_lawyer].forEach(v => v.flush());
+
+	space.setAttribute("hidden", 1);
+
+	mod_loading.show();
+
+	setTimeout(_ => {
+		mod_loading.hide();
+
+		client_new.setAttribute("glow", 1);
+		space_empty.removeAttribute("invisible");
+		info.setAttribute("invisible", 1);
+		ctrl_logs.setAttribute("invisible", 1);
+
+		login_user.focus();
+	}, 300);
+});
 
 spook.return();

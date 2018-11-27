@@ -26,14 +26,17 @@
 		</div>
 
 		<div id=ctrl>
-			<button id=ctrl_log
-				button="0"
-				invisible
-			>New Log</button><button id=ctrl_bill
-				button="0"
-				invisible
-			>Billing</button>
-			<img id=ctrl_pref src=../img/preferences.png draggable=false>
+			<img id=ctrl_logout src=../img/logout.png draggable=false>
+			<img id=ctrl_help src=../img/help.png draggable=false hidden>
+			<div id=ctrl_logs invisible>
+				<button id=ctrl_log
+					button="0"
+				>New Log</button><button id=ctrl_bill
+					button="0"
+					hidden
+				>Billing</button>
+				<img id=ctrl_pref src=../img/preferences.png draggable=false>
+			</div>
 		</div>
 
 		<!-- All work logs for the currently selected client. -->
@@ -60,7 +63,6 @@
 					type=text
 					placeholder=Search
 					input_text="0"
-					disabled
 				><img id=client_new
 					class=sidebar_new
 					src=../img/new.png
@@ -79,7 +81,6 @@
 					type=text
 					placeholder=Search
 					input_text="0"
-					disabled
 				><img id=lawyer_new
 					class=sidebar_new
 					src=../img/new.png
@@ -97,7 +98,6 @@
 					type=text
 					placeholder=Search
 					input_text="0"
-					disabled
 				><img id=code_new
 					class=sidebar_new
 					src=../img/new.png
@@ -188,8 +188,8 @@
 		<div scroll="0">
 			<label class=pref_popup_label>Client Name</label>
 			<input id=pref_popup_name type=text input_text="0">
-			<label class=pref_popup_label>Billing Button Visibility</label>
-			<checkbox id=pref_popup_hide checkbox="0" active=1></checkbox>
+			<label class=pref_popup_label hidden>Billing Button Visibility</label>
+			<checkbox id=pref_popup_hide checkbox="0" active=1 hidden></checkbox>
 			<img id=pref_popup_close src=../img/close_small.png draggable=false>
 			<!-- <sep></sep>
 			<button id=pref_popup_clear button="0">Clear This Client's Log</button>
@@ -203,14 +203,22 @@
 			<input id=login_user
 				type=text
 				placeholder=Username
-				input_text="0"
-				value="admin">
+				input_text="0">
 			<input id=login_pwrd
 				type=password
 				placeholder=Password
-				input_text="0"
-				value="1234">
+				input_text="0">
 			<button id=login_acpt button="0">Login</button>
+		</div>
+	</div>
+
+	<div id=logout_popup popup invisible>
+		<dim></dim>
+		<div>
+			<label>Are you sure you want to <label style=color:var(--warning)>logout</label>?</label>
+			<sub>Don't worry, everything is saved!</sub>
+			<button id=logout_popup_no button="0">No</button>
+			<button id=logout_popup_yes button="0">Yes</button>
 		</div>
 	</div>
 

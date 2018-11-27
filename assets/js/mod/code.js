@@ -6,8 +6,8 @@
 const mod_code = {
 	tooltip_search:
 		"<center small>" +
-		"<b style=color:var(--info)>TYPE</b> something to search " +
-		"for <b style=color:var(--accent-code)>CODES</b>.<br>" +
+		"<b style=color:var(--info)>TYPE</b> to search for " +
+		"<b style=color:var(--accent-code)>CODES</b>.<br>" +
 		"</center>",
 	tooltip_load:
 		"<center small style=color:var(--info)>LOADING...</center>",
@@ -19,7 +19,12 @@ const mod_code = {
 
 spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 	mod_datastore.init(code_space, 128, 64, {
-		getter: (skip, limit) => mod_relay.Code.get(skip, limit, ""),
+		getter: (skip, limit) =>
+			mod_relay.Code.get(
+				skip,
+				limit,
+				code_search.value
+			),
 		key: doc => doc.code,
 		new: (doc, index) => {
 			if (doc.code.search(/\S/) == -1)
@@ -112,16 +117,17 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 						log_popup_code_config.tooltip =
 							log_popup_code_config.tooltip();
 
-						log_popup_code_config.update(
-							docs.map(doc => doc.description || doc.code)
-						);
+						log_popup_code_config.update(docs.map(doc =>
+							doc.description || doc.code
+						));
 
 						if (!docs.length)
-							log_popup_code_config.tooltip = drool.tooltip(
-								target,
-								mod_code.tooltip_empty,
-								8
-							);
+							log_popup_code_config.tooltip =
+								drool.tooltip(
+									target,
+									mod_code.tooltip_empty,
+									8
+								);
 					}
 				});
 			}
@@ -129,14 +135,32 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 	};
 
 	log_popup_code.addEventListener("focusin", event => {
-		if (!event.target || !event.target.getAttribute("contenteditable"))
+		if (!event.target ||
+			!event.target.getAttribute("contenteditable"))
 			return;
 
 		log_popup_code_config.update = drool.list(
 			log_popup_code,
 			[],
 			(v, i) => {
-				event.target.innerHTML = log_popup_code_config.list[i].code;
+				let code = log_popup_code_config.list[i].code;
+				let list = log_popup_code
+					.getElementsByTagName("label");
+
+				if (list.length > 1)
+					for (let n = 1; n < list.length; n++)
+						if (list[n].innerText == code) {
+							vergil(
+								"<div style=color:var(--warning)>" +
+								"You can't add the same code twice!" +
+								"</div>",
+								2600
+							);
+
+							return;
+						}
+
+				event.target.innerHTML = code;
 
 				event.target.removeAttribute("contenteditable");
 				event.target.addEventListener(
@@ -163,7 +187,8 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			return;
 
 		if (log_popup_code_config.tooltip)
-			log_popup_code_config.tooltip = log_popup_code_config.tooltip();
+			log_popup_code_config.tooltip =
+				log_popup_code_config.tooltip();
 
 		event.target.innerHTML = "";
 	});
@@ -175,9 +200,17 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			event.target.innerHTML =
 				event.target.innerText.replace(/\r?\n|\r/g, "");
 		} else
-			log_popup_code_config.fn(event.target, event.target.innerText);
+			log_popup_code_config.fn(
+				event.target,
+				event.target.innerText
+			);
 	});
 }));
+
+code_search.addEventListener("input", _ => {
+	mod_code.flush();
+	mod_code.init();
+});
 
 code_new.addEventListener("click", _ => {
 	code_popup_code.value = code_popup_desc.value = "";

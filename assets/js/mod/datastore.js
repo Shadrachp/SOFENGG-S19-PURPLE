@@ -20,15 +20,32 @@ const mod_datastore = {};
  * @param {Function} getter - the `.get` function from `relay.js`.
 **/
 mod_datastore.init = (space, limit, buffer, callbacks) => {
-	let list = [];
+	/* The workID is to help distinguish if the datastore has been
+	   flushed. This will stop on-going requests that will pry the
+	   datastore into adding data that should've been flushed before.
+	*/
+	let workID = viscount();
+	// List of all the documents.
+	let list = {};
+	// Dumped list of keys. Used for sorting.
 	let dump = [];
+	// This will function as a debounce for scrolling.
 	let busy;
+	// How many documents were skipped. Flushing sets it back to 0.
 	let skip = 0;
 
 	{
-		if (!callbacks.hasOwnProperty("sort"))
-			callbacks.sort = (a, b) => a < b;
+		let defaults = {
+			sort: (a, b) => a < b,
+			flush: _ => _
+		};
 
+		for (let k in defaults)
+			if (!callbacks.hasOwnProperty(k))
+				callbacks[k] = defaults[k];
+
+
+		// Wrap `callbacks.new`.
 		let callback_new = callbacks.new;
 
 		callbacks.new = (doc, index) => {
@@ -38,6 +55,27 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 			return callback_new(doc, index);
 		};
 	}
+
+	/**
+	 * Keep track on how many requests are on-going.
+	**/
+	let getter_counter = id => {
+		if (id == null)
+			return getter_counter.count++;
+
+		getter_counter.count--;
+
+		if (workID != id) {
+			if (!getter_counter) {
+				getter_counter.dump.forEach(v => viscount(v));
+				getter_counter.dump = [];
+			}
+
+			return true;
+		}
+	};
+	getter_counter.count = 0; // Total on-going requests.
+	getter_counter.dump = []; // List of previous IDs.
 
 	/**
 	 * Add to dump list (dump list is literally just for 'dumping' all the
@@ -87,7 +125,12 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 		// skipped data could be less than the buffer.
 		let len = Math.min(skip, buffer);
 
+		let id = workID;
+		getter_counter();
 		callbacks.getter(skip - len, len)(docs => {
+			if (getter_counter(id))
+				return;
+
 			skip -= docs.length;
 
 			if (dump.length + docs.length > limit)
@@ -116,7 +159,12 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 	let load_fore = _ => {
 		busy = true;
 
+		let id = workID;
+		getter_counter();
 		callbacks.getter(skip + dump.length, buffer)(docs => {
+			if (getter_counter(id))
+				return;
+
 			skip += docs.length;
 
 			if (dump.length + docs.length > limit)
@@ -172,7 +220,7 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 			if (data)
 				list[key] = data;
 
-			return data ? true : false;
+			return data;
 		};
 
 		mod.remove = key => {
@@ -193,13 +241,31 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 			callbacks.move(list[key_new], dump_add(key_new));
 		};
 
+		mod.flush = _ => {
+			getter_counter.dump.push(workID);
+			workID = viscount();
+
+			dump.forEach(key => callbacks.remove(list[key]));
+
+			dump = [];
+			list = {};
+			skip = 0;
+
+			callbacks.flush();
+		};
+
 		mod.get = key => list.hasOwnProperty(key) ? list[key] : null;
 
 		mod.has = key => list[key] != null;
 
 		mod.init = _ => {
+			let id = workID;
+			getter_counter();
 			callbacks.getter(0, limit)(docs => {
-				if (docs)
+				if (getter_counter(id))
+					return;
+
+				if (docs) {
 					docs.map(doc => {
 						let key = callbacks.key(doc);
 
@@ -208,13 +274,18 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 						list[key] = callbacks.new(doc);
 					});
 
-				space.addEventListener("scroll", event => scroll());
+					viscount(id);
 
-				space.addEventListener("wheel", event =>
-					scroll(event.deltaY < 0 ? -1 : 1)
-				);
+					init_id = null;
+				}
 			});
 		};
+
+		space.addEventListener("scroll", event => scroll());
+
+		space.addEventListener("wheel", event =>
+			scroll(event.deltaY < 0 ? -1 : 1)
+		);
 
 		return mod;
 	};

@@ -21,9 +21,10 @@ code_popup_cancel.addEventListener("click", _ =>
 );
 
 code_popup_create.addEventListener("click", _ => {
+	code_popup_code.value = code_popup_code.value.trim();
+
 	// Code must contain SOMETHING.
-	if (!code_popup_code.value ||
-		code_popup_code.value.search(/\S/) == -1) return vergil(
+	if (!code_popup_code.value) return vergil(
 		"<div style=color:var(--warning)>" +
 		"Please input something for the <b>code</b>." +
 		"</div>"
@@ -58,10 +59,17 @@ code_popup_create.addEventListener("click", _ => {
 		description: code_popup_desc.value
 	};
 
-	mod_relay.Code.new(data)(flag => {
+	mod_relay.Code.new(data)(_id => {
 		mod_loading.hide();
 
-		if (flag && mod_code.new(data)) {
+		if (_id) {
+			let doc = mod_code.new(data);
+
+			if (!doc)
+				return;
+
+			doc._id = _id;
+
 			code_search.value = "";
 
 			code_popup.setAttribute("invisible", 1);

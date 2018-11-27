@@ -7,8 +7,8 @@
 const mod_lawyer = {
 	tooltip_search:
 		"<center small>" +
-		"<b style=color:var(--info)>TYPE</b> something to search " +
-		"for <b style=color:var(--accent-lawyer)>LAWYERS</b>.<br>" +
+		"<b style=color:var(--info)>TYPE</b> to search for " +
+		"<b style=color:var(--accent-lawyer)>LAWYERS</b>.<br>" +
 		"</center>",
 	tooltip_load:
 		"<center small style=color:var(--info)>LOADING...</center>"
@@ -29,7 +29,12 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 
 	mod_datastore.init(lawyer_space, 128, 64, {
 		getter: (skip, limit) =>
-			mod_relay.Lawyer.get(conversation_id, skip, limit, ""),
+			mod_relay.Lawyer.get(
+				conversation_id,
+				skip,
+				limit,
+				lawyer_search.value
+			),
 		key: doc => doc.key || doc.name.toUpperCase(),
 		new: (doc, index) => {
 			if (doc.name.search(/\S/) == -1)
@@ -184,6 +189,11 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		log_popup_lawyer.removeAttribute("debounce");
 	});
 }));
+
+lawyer_search.addEventListener("input", _ => {
+	mod_lawyer.flush();
+	mod_lawyer.init();
+});
 
 lawyer_new.addEventListener("click", _ => {
 	lawyer_popup_input.value = "";

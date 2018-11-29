@@ -50,7 +50,8 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 				let l = {
 					log_space_time: mod_info.stats_time_convert(
 						doc.time_end - doc.time_start
-					),
+					) || "<b style=color:var(--warning)>" +
+						"No Accumulated Time</b>",
 					log_space_date: doc.date.toLocaleDateString()
 				};
 
@@ -67,12 +68,18 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 				root.appendChild(div);
 
 				l = {
+					log_space_range: [
+						"label",
+						lemon.time.minutesToStandard(doc.time_start) +
+						" to " +
+						lemon.time.minutesToStandard(doc.time_end)
+					],
 					log_space_lawyer: [
 						"label",
 						doc.lawyer ? "<label>Lawyer</label>" +
 							doc.lawyer.name :
 						"<label style=color:var(--warning)>No Lawyer" +
-						"</label>"
+							"</label>"
 					],
 					log_space_code: [
 						"label",
@@ -80,7 +87,8 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 							doc.codes.map(doc =>
 								"<label>" + doc.code + "</label>"
 							).join("") :
-						"<label style=color:var(--warning)>No Code</label>"
+						"<label style=color:var(--warning)>" +
+							"No Code</label>"
 					]
 				};
 
@@ -91,7 +99,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 					];
 
 				for (let i in l) {
-					let v = q("!" + l[0] + " class=" + i);
+					let v = q("!" + l[i][0] + " class=" + i);
 					v.innerHTML = l[i][1];
 
 					div.appendChild(v);

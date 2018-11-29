@@ -21,6 +21,26 @@ const conversation = {
 
 
 
+//-- Some nice tools for decoding. --//
+
+const regex_literals = [];
+const regex_expressions = "\\.[](){}^|$+-*/?!,=:";
+
+for (let i = 0; i < regex_expressions.length; i++) {
+	let v = "\\" + regex_expressions[i];
+
+	regex_literals.push([new RegExp(v, "g"), v])
+}
+
+function literalRegExp(str) {
+	regex_literals.forEach(v => str = str.replace(v[0], v[1]));
+
+	return str;
+}
+
+
+
+
 //-- Some channels. --//
 
 /**
@@ -56,7 +76,12 @@ let filter = {
 	User: {
 		new: (event, id, properties, channel) =>
 			spook.models.User.findOne({
-				username: new RegExp("^" + properties.username + "$", "i")
+				username: new RegExp(
+					"^" +
+						literalRegExp(properties.username) +
+						"$",
+					"i"
+				)
 			}).then(doc => {
 				if (!doc) {
 					properties.password =
@@ -110,7 +135,12 @@ let filter = {
 
 			spook.models.Client.findOne({
 				user: conversation.id,
-				name: new RegExp("^" + properties.name + "$", "i")
+				name: new RegExp(
+					"^" +
+						literalRegExp(properties.name) +
+						"$",
+					"i"
+				)
 			}).then(doc => {
 				if (!doc) {
 					properties.user = conversation.id;
@@ -133,7 +163,7 @@ let filter = {
 
 			spook.models.Client.findOne({
 				user: conversation.id,
-				name: new RegExp(name, "i")
+				name: new RegExp(literalRegExp(name), "i")
 			}).then(doc => {
 				if (doc) {
 					doc.set(properties);
@@ -185,7 +215,8 @@ let filter = {
 			}];
 
 			if (filter)
-				pipeline[0].$match.name = new RegExp(filter, "i");
+				pipeline[0].$match.name =
+					new RegExp(literalRegExp(filter), "i");
 
 			spook.models.Client.aggregate(pipeline).then(docs =>
 				event.sender.send(channel, id, docs)
@@ -198,7 +229,12 @@ let filter = {
 
 			spook.models.Client.findOne({
 				user: conversation.id,
-				name: new RegExp("^" + key + "$", "i")
+				name: new RegExp(
+					"^" +
+						literalRegExp(key) +
+						"$",
+					"i"
+				)
 			}).then(doc =>
 				event.sender.send(
 					channel,
@@ -337,7 +373,12 @@ let filter = {
 
 			spook.models.Lawyer.findOne({
 				user: conversation.id,
-				name: new RegExp("^" + properties.name + "$", "i")
+				name: new RegExp(
+					"^" +
+						literalRegExp(properties.name) +
+						"$",
+					"i"
+				)
 			}).then(doc => {
 				if (!doc) {
 					properties.user = conversation.id;
@@ -411,7 +452,8 @@ let filter = {
 			}];
 
 			if (filter)
-				pipeline[0].$match.name = new RegExp(filter, "i");
+				pipeline[0].$match.name =
+					new RegExp(literalRegExp(filter), "i");
 
 			spook.models.Lawyer.aggregate(pipeline).then(docs =>
 				event.sender.send(channel, id, docs)
@@ -424,7 +466,12 @@ let filter = {
 
 			spook.models.Lawyer.findOne({
 				user: conversation.id,
-				name: new RegExp("^" + key + "$", "i")
+				name: new RegExp(
+					"^" +
+						literalRegExp(key) +
+						"$",
+					"i"
+				)
 			}).then(doc =>
 				event.sender.send(
 					channel,
@@ -486,15 +533,18 @@ let filter = {
 				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
 			}];
 
-			if (filter)
+			if (filter) {
+				let regex = new RegExp(literalRegExp(filter), "i");
+
 				pipeline.unshift({
 					$match: {
 						$or: [
-							{ code: new RegExp(filter, "i") },
-							{ description: new RegExp(filter, "i") }
+							{ code: regex },
+							{ description: regex }
 						]
 					}
 				});
+			}
 
 			spook.models.Code.aggregate(pipeline).then(docs =>
 				event.sender.send(channel, id, docs)
@@ -502,7 +552,12 @@ let filter = {
 		},
 
 		getOne: (event, id, key, channel) => {
-			key = new RegExp("^" + key + "$", "i");
+			key = new RegExp(
+				"^" +
+					literalRegExp(key) +
+					"$",
+				"i"
+			);
 
 			spook.models.Code.findOne({
 				$or: [

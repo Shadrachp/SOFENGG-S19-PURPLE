@@ -13,14 +13,51 @@ const lemon = {
 	time: {}
 };
 
+{
+	let literals = [];
+	let str = "\\.[](){}^|$+-*/?!,=:";
+
+	for (let i = 0; i < str.length; i++) {
+		let v = "\\" + str[i];
+
+		literals.push([new RegExp(v, "g"), v]);
+	}
+
+	/**
+	 * Avoid regular expression from triggering certain symbols by
+	 * escaping them.
+	**/
+	lemon.literalRegExp = str => {
+		literals.forEach(v => str = str.replace(v[0], v[1]));
+
+		return str;
+	};
+}
+
+/**
+ * Get standard time from minutes.
+ *
+ * @param {Integer} time - The time.
+ * @return {String} The output.
+**/
+lemon.time.minutesToStandard = time => {
+	let hr = Math.floor(time/60);
+	let mn = time%60;
+	let md = hr >= 12 ? " PM" : " AM";
+	console.log(hr, mn)
+	hr = !hr ? 12 : hr > 12 ? (hr - 12) : hr;
+
+	return ("00" + hr).slice(-2) + ":" + ("00" + mn).slice(-2) + md; 
+};
+
 /**
  * Fix the string so that it follows the 12-hour format.
  *
  * If hour is less than 0 or greater than 12, it will be constrained to
  * within range.
  *
- * If minute is less than 0 or greater than 59, it will be constrained to
- * within range.
+ * If minute is less than 0 or greater than 59, it will be constrained
+ * to within range.
  *
  * If meridiem is not found, it will be set to 'AM'. Meridiem must be
  * `AM` or `PM`, case-insensitive.

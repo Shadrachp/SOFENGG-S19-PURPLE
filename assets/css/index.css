@@ -1017,6 +1017,14 @@ img#ctrl_logout {
 	color: var(--info);
 }
 
+.log_space_range {
+	display: block;
+	margin-left: 8px;
+	color: var(--info);
+	font-size: 14px;
+	font-weight: bold;
+}
+
 .log_space_lawyer {
 	display: inline-block;
 	margin-top: 16px;

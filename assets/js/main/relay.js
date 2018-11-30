@@ -247,7 +247,17 @@ let filter = {
 					}
 				)
 			);
-		}
+		},
+        
+        delete: (event, id, hash, name, channel) =>{
+            if (conversation.hash != hash)
+				return event.sender.send(channel, id);
+            
+            spook.models.Client.remove({
+				user: conversation.id,
+				name: new RegExp(literalRegExp(name), "i")
+			})
+        }
 	},
 
 	Log: {
@@ -362,7 +372,10 @@ let filter = {
 				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
 			}]).then(docs =>
 				event.sender.send(channel, id, docs)
-			)
+			),
+
+		delete: (event, id, _id, channel) =>
+			spook.models.Log.remove({_id: _id})
 	},
 
 	Lawyer: {

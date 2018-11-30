@@ -375,7 +375,10 @@ let filter = {
 			),
 
 		delete: (event, id, _id, channel) =>
-			spook.models.Log.remove({_id: _id})
+			spook.models.Log.remove({_id: _id}),
+        
+        deleteAll: (event, id, client, channel) =>
+            spook.models.Log.remove(client)
 	},
 
 	Lawyer: {

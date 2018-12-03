@@ -5,8 +5,10 @@
  * @dependencies vergil.js, drool.js, client.js
 **/
 const mod_pref = {};
+const mod_pref_lawyer = {};
 
 mod_pref.setConversationID = _ => _;
+mod_pref_lawyer.setConversationID = _ => _;
 
 {
 	let conversation_id;
@@ -40,40 +42,57 @@ mod_pref.setConversationID = _ => _;
 
 		pref_popup_name.value = pref_popup_name.value.trim();
 
+		// gets the current highlighted name
+		let c = client_space.getElementsByTagName("label")
+		var i = 0;
+		let current = null;
+		while (i<c.length) {
+			if (c[i].getAttribute("selected") != null) {
+				current = c[i];
+				break;
+			}
+			i++;
+		}
+		// console.log("current: "+current.innerText);
+		let currentName = current.innerText;
+
 		if (!pref_popup_name.value) return fn(
 			"<label style=color:var(--warning)>" +
-			"Please input something." +
+			"Please input a name for the client." +
 			"</label>"
 		);
 
 		if (pref_popup_name.value.length < 2 ||
 			pref_popup_name.value.length > 64) return fn(
 			"<div style=color:var(--warning)>" +
-			"Client's name must have at least <b>2 characters</b> " +
+			"Name must have at least <b>2 characters</b> " +
 			"and up to <b>64 characters</b> at most." +
 			"</div>"
 		);
 
+		if (currentName == pref_popup_name.value)  return fn(
+			"<label style=color:var(--warning)>" +
+			"Client name is still the same. " + 
+			"Name was not changed." +
+			"</label>"
+		);
+
 		mod_loading.show();
 
-		mod_relay.Client.edit(
-			conversation_id,
+		mod_client.edit(
 			target.key,
-			{
-				name: pref_popup_name.value
-			}
+			{name: pref_popup_name.value}
 		)(flag => {
 			mod_loading.hide();
 
 			if (flag) {
 				let key = pref_popup_name.value.toUpperCase();
-
-				// Migrate data to new name.
-
-				mod_client.move(target.key, key);
+				let key_old = target.key;
 
 				target.key = key;
 				target.name = pref_popup_name.value;
+
+				mod_client.move(key_old, key);
 
 				if (target.hasOwnProperty("btn"))
 					target.btn.innerHTML =
@@ -88,6 +107,97 @@ mod_pref.setConversationID = _ => _;
 			} else fn(
 				"<label style=color:var(--warning)>" +
 				"That name is already in use!" +
+				"</label>"
+			);
+		});
+	});
+
+	mod_pref_lawyer.setConversationID = hash => conversation_id = hash;	
+
+// 	// The lawyer that is being modified by the preferences window.
+// 	let lawyer_target;
+
+	mod_pref_lawyer.show = doc => {
+		lawyer_target = doc;
+		pref_popup_name_lawyer.value = doc.name;
+
+		pref_popup.removeAttribute("invisible");
+	};
+
+	pref_popup_name_lawyer.addEventListener("change", _ => {
+		let fn = txt => {
+			pref_popup_name_lawyer.value = lawyer_target.name;
+
+			vergil(txt);
+		};
+
+		pref_popup_name_lawyer.value = pref_popup_name_lawyer.value.trim();
+
+		// gets the current highlighted name
+		let c = lawyer_space.getElementsByTagName("label")
+		var i = 0;
+		let current = null;
+		while (i<c.length) {
+			if (c[i].getAttribute("selected") != null) {
+				current = c[i];
+				break;
+			}
+			i++;
+		}
+		// console.log("current: "+current.innerText);
+		let currentName = current.innerText;
+
+		if (!pref_popup_name_lawyer.value) return fn(
+			"<label style=color:var(--warning)>" +
+			"Please input something for the lawyer's name." +
+			"</label>"
+		);
+
+		if (pref_popup_name_lawyer.value.length < 2 ||
+			pref_popup_name_lawyer.value.length > 64) return fn(
+			"<div style=color:var(--warning)>" +
+			"Lawyer's name must have at least <b>2 characters</b> " +
+			"and up to <b>64 characters</b> at most." +
+			"</div>"
+		);
+
+		if (currentName == pref_popup_name_lawyer.value)  return fn(
+			"<label style=color:var(--warning)>" +
+			"Lawyer name is still the same. " + 
+			"Name was not changed." +
+			"</label>"
+		);
+
+		mod_loading.show();
+
+		mod_relay.Lawyer.edit(
+			conversation_id,
+			lawyer_target.key,
+			{name: pref_popup_name_lawyer.value}
+		)(flag => {
+			mod_loading.hide();
+
+			if (flag) {
+				let key = pref_popup_name_lawyer.value.toUpperCase();
+
+				mod_lawyer.move(lawyer_target.key, key);
+
+				lawyer_target.key = key;
+				lawyer_target.name = pref_popup_name_lawyer.value;
+
+				if (lawyer_target.hasOwnProperty("btn"))
+					lawyer_target.btn.innerHTML =
+						pref_popup_name_lawyer.value +
+						mod_lawyer.pref_btn;
+
+				vergil(
+					"<label style=color:var(--success)>" +
+					"Lawyer's name successfully changed!" +
+					"</label>"
+				);
+			} else fn(
+				"<label style=color:var(--warning)>" +
+				"Lawyer: That name is already in use!" +
 				"</label>"
 			);
 		});

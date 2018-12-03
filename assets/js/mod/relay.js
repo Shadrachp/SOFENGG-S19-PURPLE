@@ -123,15 +123,12 @@ const mod_relay = {
 			 * specifically requested. `null` if nothing was found.
 			**/
 			"get",
-			"getOne",
-            "delete"
+			"getOne"
 		],
 		Log: [
 			"new",
 			"edit",
-			"get",
-            "delete",
-            "DeleteAll"
+			"get"
 		],
 		Lawyer: [
 			/**
@@ -221,6 +218,12 @@ const mod_relay = {
 			 * @param {Array[Object]|null} docs - the documents you
 			 * specifically requested. `null` if nothing was found.
 			**/
+			"get",
+			"getOne"
+		],
+		Case: [
+			"new",
+			"edit",
 			"get",
 			"getOne"
 		]

@@ -67,12 +67,13 @@ client_popup_cancel.addEventListener("click", _ =>
 			mod_loading.hide();
 
 			if (_id) {
-				let doc = mod_client.new({name: client_popup_input.value});
+				let doc = mod_client.new({
+					_id,
+					name: client_popup_input.value
+				});
 
 				if (!doc)
 					return;
-
-				doc._id = _id;
 
 				client_search.value = "";
 

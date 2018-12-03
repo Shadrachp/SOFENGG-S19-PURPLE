@@ -143,10 +143,6 @@ dim {
 	opacity: 0 !important;
 }
 
-[invisible] * {
-	opacity: 0 !important;
-}
-
 [invisible],
 [invisible] *,
 [hidden],
@@ -305,6 +301,10 @@ smaller {
 	z-index: 4;
 }
 
+[popup][invisible] > div {
+	transform: translate(-50%, -50%) scale(0.9);
+}
+
 [popup] > div {
 	position: absolute;
 	top: 50%;
@@ -312,6 +312,7 @@ smaller {
 	border-radius: 8px;
 	background-color: #fff;
 	transform: translate(-50%, -50%);
+	transition: all 0.2s;
 }
 
 
@@ -871,6 +872,29 @@ smaller {
 	transition: all 0.1s;
 }
 
+.sidebar_space > label[selected] > .sidebar_pref_lawyer {
+	display: block;
+	pointer-events: all;
+}
+
+.sidebar_pref_lawyer {
+	position: absolute;
+	display: none;
+	right: 10px;
+	margin-top: -20px;
+	float: right;
+	transition: all 0.2s;
+}
+
+.sidebar_pref_lawyer:hover {
+	transform: rotateZ(45deg);
+	filter: brightness(80%);
+}
+
+.sidebar_pref_lawyer:active {
+	filter: brightness(60%);
+	transition: all 0.1s;
+}
 
 
 
@@ -936,22 +960,130 @@ img#ctrl_logout {
 
 
 
+/*-- Case Matter --*/
+
+#case_space {
+	position: absolute;
+	top: 64px;
+	left: 200px;
+	width: calc(100% - 200px);
+	height: calc(100% - 64px);
+	border-top-left-radius: 8px;
+	background-color: #fff;
+	transition: all 0.2s;
+}
+
+#case_new {
+	position: absolute;
+	margin: 8px;
+	margin-top: 0;
+	width: 176px;
+	height: 32px;
+	border-top-left-radius: 0 !important;
+	border-top-right-radius: 0 !important;
+	background-color: var(--submit);
+	color: #fff;
+}
+
+.case_space {
+	position: absolute;
+	top: 40px;
+	padding: 0 16px;
+	padding-right: 8px;
+	width: 160px;
+	height: calc(100% - 40px);
+	overflow-y: auto;
+}
+
+.case_space > * {
+	display: block;
+	padding: 8px 8px;
+	font-size: 14px;
+	border-radius: 6px;
+	box-shadow: 0 0 1px #7f7f7f inset;
+	word-wrap: break-word;
+	transition: all 0.2s;
+	cursor: pointer;
+}
+
+.case_space > *:not(:first-child) {
+	margin-top: 8px;
+}
+
+.case_space > *:hover {
+	background-color: #dfdfdf;
+	box-shadow: none;
+}
+
+.case_space > *:active {
+	background-color: #afafaf;
+	box-shadow: none;
+	transition: all 0.1s;
+}
+
+.case_space > *[selected] {
+	background-color: #3f6fcf;
+	color: #fff;
+	box-shadow: none;
+	pointer-events: none;
+}
+
+
+
+
+/*-- case_popup --*/
+
+#case_popup > div {
+	padding: 8px;
+}
+
+#case_popup > div > label {
+	display: block;
+	margin-top: 8px;
+	color: var(--info);
+	text-align: center;
+	font-size: 20px;
+	font-weight: lighter;
+}
+
+#case_popup_input {
+	display: block;
+	width: 256px;
+	margin: 16px 8px;
+	font-size: 16px;
+}
+
+#case_popup_cancel {
+	color: #fff;
+	background-color: var(--cancel);
+}
+
+#case_popup_create {
+	float: right;
+	color: #fff;
+	background-color: var(--submit);
+}
+
+
+
+
 /*-- Log --*/
 
 #log {
 	position: absolute;
-	top: 64px;
-	left: 200px;
-	width: calc(100% - 216px);
-	height: calc(100% - 72px);
+	left: 192px;
+	width: calc(100% - 192px);
+	height: 100%;
+	background-color: #5a5a6a;
 }
 
 .log_space {
 	position: absolute;
 	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
+	left: 8px;
+	width: calc(100% - 16px);
+	height: calc(100% - 8px);
+	padding-top: 8px;
 	overflow: hidden;
 	overflow-y: auto;
 	transition: all 0.2s;
@@ -960,13 +1092,10 @@ img#ctrl_logout {
 .log_space > * {
 	display: block;
 	height: 24px;
-	margin-left: 0;
-	margin-right: 16px;
-	padding: 0 8px;
-	padding-bottom: 8px;
-	border-radius: 8px;
-	color: #fff;
-	background-color: #2a2a3a;
+	padding: 8px;
+	padding-top: 0;
+	border-radius: 6px;
+	background-color: #fff;
 	cursor: pointer;
 	transition: all 0.2s;
 	overflow: hidden;
@@ -974,14 +1103,9 @@ img#ctrl_logout {
 
 .log_space > *[expand] {
 	height: auto;
-	color: #000;
-	background-color: #fff;
-	box-shadow: 0 0 1px #000;
 }
 
 .log_space > *:hover {
-	margin-left: 8px;
-	margin-right: 8px;
 }
 
 .log_space > *:not(:last-child) {
@@ -1010,10 +1134,7 @@ img#ctrl_logout {
 .log_space_date {
 	float: right;
 	font-size: 14px;
-	color: #6fcfff;
-}
-
-.log_space > *[expand] .log_space_date {
+	font-weight: bolder;
 	color: var(--info);
 }
 
@@ -1293,16 +1414,8 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 #pref_popup > div > sep {
 	display: block;
 	margin: 32px;
-	margin-top: 64px;
 	border-bottom: 4px dotted var(--warning);
 }
-
-/*#pref_popup > div > button {
-	display: block;
-	width: 100%;
-	margin-top: 16px;
-	font-size: 14px;
-}*/
 
 #pref_popup_close {
 	position: absolute;
@@ -1331,12 +1444,10 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	margin-left: 8px;
 }
 
-#pref_popup_clear {
-	background-color: #6f6f6f;
-	color: #fff;
-}
-
 #pref_popup_danger {
+	display: block;
+	margin: 0 32px;
+	width: calc(100% - 64px);
 	background-color: var(--danger);
 	color: #fff;
 }

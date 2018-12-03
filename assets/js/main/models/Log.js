@@ -6,7 +6,7 @@
 const mongoose = require("mongoose");
 
 module.exports = models => { return {
-	client: {
+	case: {
 		type: mongoose.Schema.Types.ObjectId,
 		required: true
 	},
@@ -40,5 +40,10 @@ module.exports = models => { return {
 	description: {
 		type: String,
 		default: ""
+	},
+	billed: {
+		type: Boolean,
+		default: false,
+		required: true
 	}
 }};

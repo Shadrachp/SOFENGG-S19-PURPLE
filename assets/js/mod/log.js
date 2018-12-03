@@ -19,11 +19,13 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		mod_log_popup.setConversationID(hash);
 	};
 
-	mod_log.new = (client_id, log_space) =>
+	mod_log.new = (case_id, log_space) =>
 		mod_datastore.init(log_space, 128, 64, {
 			getter: (skip, limit) =>
-				mod_relay.Log.get(client_id, skip, limit),
+				mod_relay.Log.get(case_id, skip, limit),
+
 			key: doc => doc._id,
+
 			new: (doc, index) => {
 				doc.date = new Date(doc.date);
 
@@ -107,11 +109,13 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 
 				return doc;
 			},
+
 			remove: doc => {
 				doc.root.remove();
 
 				return true;
 			},
+
 			move: (doc, index) => {
 				if (index == null)
 					log_space.appendChild(doc.btn);
@@ -121,7 +125,8 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 						log_space.childNodes[index]
 					);
 			},
-			sort: (a, b) => a > b
+
+			sort: (a, b) => a._id > b._id
 		})({});
 }));
 

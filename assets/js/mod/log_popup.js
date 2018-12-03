@@ -19,45 +19,6 @@ mod_log_popup.setConversationID = _ => _;
 
 	mod_log_popup.setConversationID = hash => conversation_id = hash;
 
-	/** A proxy that feeds input through all constraints for creating a
-	 * new log. Use this instead of 'mod_log.space_new'.
-	**/
-	mod_log_popup.new = _ => {
-		// Make sure there's actually a selected client to save to.
-		if (!mod_client.selected)
-			return;
-
-		log_popup_date.setAttribute(
-			"placeholder",
-			new Date().toLocaleDateString()
-		);
-
-
-		// Extract and convert code into array.
-		let code = [];
-		let l = log_popup_code.getElementsByTagName("label");
-
-		for (let i = 0; i < l.length; i++)
-			if (!l[i].getAttribute("contenteditable") &&
-				l[i].innerText.search(/\S/) > -1)
-				code.push(l[i].innerText);
-
-
-		// Create log.
-		mod_log.space_new(
-			mod_client.selected,
-			log_popup_date.value ||
-				log_popup_date.getAttribute("placeholder"),
-			code.length ? code : null,
-			log_popup_start.value ||
-				log_popup_start.getAttribute("placeholder"),
-			log_popup_end.value ||
-				log_popup_end.getAttribute("placeholder"),
-			log_popup_lawyer.value,
-			log_popup_desc.innerText
-		);
-	};
-
 	// User clicked the log creation interface's submit button.
 	log_popup_ctrl_submit.addEventListener("click", _ => {
 		let data = {
@@ -96,9 +57,10 @@ mod_log_popup.setConversationID = _ => _;
 			mod_loading.show();
 
 			let client = mod_client.selected;
+			let case_space = client.cases.selected;
 
 			mod_relay.Log.new({
-				client: client._id,
+				case: case_space._id,
 				date: data.date,
 				time_start: data.time_start,
 				time_end: data.time_end,
@@ -123,12 +85,20 @@ mod_log_popup.setConversationID = _ => _;
 				client.time += data.time_end - data.time_start;
 				client.logs_count++;
 
+				case_space.time += data.time_end - data.time_start;
+				case_space.logs_count++;
+
 				mod_client.edit(client.name, {
 					time: client.time,
 					logs_count: client.logs_count
 				})(_ => _);
 
-				client.logs.new(data, true);
+				mod_relay.Case.edit(case_space._id, {
+					time: case_space.time,
+					logs_count: case_space.logs_count
+				})(_ => _);
+
+				case_space.logs.new(data, true);
 
 				mod_info.stats_time_update(client.time);
 				mod_info.stats_log_update(client.logs_count);
@@ -212,6 +182,14 @@ mod_log_popup.setConversationID = _ => _;
 }
 
 ctrl_log.addEventListener("click", _ => {
+	if (!mod_client.selected.cases.selected)
+		return vergil(
+			"<div style=color:var(--warning)>" +
+			"You need to create a <b>case matter</b> first!" +
+			"</div>",
+			2600
+		);
+
 	// Reset everything before revealing.
 	log_popup_date.value =
 		log_popup_start.value =

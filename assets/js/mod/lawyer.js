@@ -11,7 +11,10 @@ const mod_lawyer = {
 		"<b style=color:var(--accent-lawyer)>LAWYERS</b>.<br>" +
 		"</center>",
 	tooltip_load:
-		"<center small style=color:var(--info)>LOADING...</center>"
+		"<center small style=color:var(--info)>LOADING...</center>",
+	pref_btn: "<img class=sidebar_pref_lawyer " +
+		"src=../img/sidebar_pref.png " +
+		"draggable=false>"
 };
 
 mod_lawyer.setConversationID = _ => _;
@@ -27,6 +30,12 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		mod_lawyer.init();
 	};
 
+	mod_lawyer.edit = (name, properties) => mod_relay.Lawyer.edit(
+		conversation_id,
+		name,
+		properties
+	);
+
 	mod_datastore.init(lawyer_space, 128, 64, {
 		getter: (skip, limit) =>
 			mod_relay.Lawyer.get(
@@ -39,9 +48,24 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		new: (doc, index) => {
 			if (doc.name.search(/\S/) == -1)
 				return;
+				
+			let key = doc.key || doc.name.toUpperCase();
+
+			if (mod_lawyer.selected && mod_lawyer.selected.key == key) {
+				for (let k in doc)
+					mod_lawyer.selected[k] == doc[k];
+
+				mod_lawyer.selected.key = doc.key || doc.name.toUpperCase();
+				doc = mod_lawyer.selected;
+			} else {
+				doc.key = doc.key || doc.name.toUpperCase();
+			}
 
 			let btn = doc.btn = q("#lawyer_space !label");
-			btn.innerHTML = doc.name;
+			btn.innerHTML += doc.name + mod_lawyer.pref_btn;;
+
+			if (mod_lawyer.selected == doc)
+				btn.setAttribute("selected", 1);
 
 			if (index == null)
 				lawyer_space.appendChild(btn);
@@ -52,7 +76,28 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 				);
 
 			btn.addEventListener("click", event => {
+
+				if (event.target != btn) {
+					mod_pref.show(mod_client.selected);
+					return mod_pref_lawyer.show(doc);					 
+				}
+					
+
+				let prev = mod_lawyer.selected;
+				if (prev) {
+					if (prev.hasOwnProperty("btn")) {
+						prev.btn.removeAttribute("selected", 1);
+					} else
+						;
+				}
+
+				btn.setAttribute("selected", 1);
+				mod_lawyer.selected = doc;
+				
 			});
+
+			if (!mod_lawyer.selected)
+				btn.click();
 
 			return doc;
 		},
@@ -63,12 +108,18 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		},
 		move: (doc, index) => {
 			if (index == null)
-				client_space.appendChild(doc.btn);
+				lawyer_space.appendChild(doc.btn);
 			else
-				client_space.insertBefore(
+			lawyer_space.insertBefore(
 					doc.btn,
-					client_space.childNodes[index]
+					lawyer_space.childNodes[index]
 				);
+		},
+		flush: _ => {
+			if (!mod_lawyer.selected)
+				return;
+
+			mod_lawyer.selected = null;
 		}
 	})(mod_lawyer);
 

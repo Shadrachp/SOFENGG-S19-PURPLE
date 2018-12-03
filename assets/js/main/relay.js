@@ -261,124 +261,122 @@ let filter = {
 	},
 
 	Log: {
-		new: (event, id, properties, channel) => {
-			console.log(properties);
+        new: (event, id, properties, channel) => {
+            properties.case = new ObjectId(properties.case);
+            properties.lawyer = new ObjectId(properties.lawyer);
+            properties.codes.forEach((v, i) =>
+                properties.codes[i] = new ObjectId(v)
+            );
 
-			properties.client = new ObjectId(properties.client);
-			properties.lawyer = new ObjectId(properties.lawyer);
-			properties.codes.forEach((v, i) =>
-				properties.codes[i] = new ObjectId(v)
-			);
+            spook.models.Log.new(properties, doc =>
+                event.sender.send(
+                    channel,
+                    id,
+                    doc && doc._id.toString()
+                )
+            )
+        },
 
-			spook.models.Log.new(properties, doc =>
-				event.sender.send(
-					channel,
-					id,
-					doc && doc._id.toString()
-				)
-			)
-		},
+        edit: (event, id, _id, properties, channel) =>
+            spook.models.Log.findOne({_id}).then(doc => {
+                if (doc) {
+                    doc.set(properties);
+                    doc.save((err, doc) => event.sender.send(
+                        channel,
+                        id,
+                        err ? false : true
+                    ));
+                } else
+                    event.sender.send(channel, id, false);
+            }),
 
-		edit: (event, id, _id, properties, channel) =>
-			spook.models.Log.findOne({_id: _id}).then(doc => {
-				if (doc) {
-					doc.set(properties);
-					doc.save((err, doc) => event.sender.send(
-						channel,
-						id,
-						err ? false : true
-					));
-				} else
-					event.sender.send(channel, id, false);
-			}),
-
-		get: (event, id, client_id, skip, limit, channel) =>
-			spook.models.Log.aggregate([{
-				$match: {
-					client: new ObjectId(client_id)
-				}
-			}, {
-				$lookup: {
-					from: "lawyers",
-					localField: "lawyer",
-					foreignField: "_id",
-					as: "lawyer"
-				}
-			}, {
-				$unwind: "$lawyer"
-			}, {
-				$unwind: "$codes"
-			}, {
-				$lookup: {
-					from: "codes",
-					localField: "codes",
-					foreignField: "_id",
-					as: "codes"
-				}
-			}, {
-				$unwind: "$codes"
-			}, {
-				$project: {
-					_id: {
-						$toString: "$_id"
-					},
-					date: 1,
-					time_start: 1,
-					time_end: 1,
-					lawyer: {
-						_id: {
-							$toString: "$lawyer._id"
-						},
-						name: 1
-					},
-					codes: {
-						_id: {
-							$toString: "$codes._id"
-						},
-						code: 1,
-						description: 1
-					},
-					description: 1
-				}
-			}, {
-				$group: {
-					_id: "$_id",
-					date: {
-						$first: "$date"
-					},
-					time_start: {
-						$first: "$time_start"
-					},
-					time_end: {
-						$first: "$time_end"
-					},
-					lawyer: {
-						$first: "$lawyer"
-					},
-					codes: {
-						$push: "$codes"
-					},
-					description: {
-						$first: "$description"
-					}
-				}
-			}, {
-				$sort: {
-					_id: -1
-				}
-			}, {
-				$skip: skip != null ? (skip < 0 ? 0 : skip) : 0
-			}, {
-				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
-			}]).then(docs =>
-				event.sender.send(channel, id, docs)
-			),
+        get: (event, id, case_id, skip, limit, channel) =>
+            spook.models.Log.aggregate([{
+                $match: {
+                    case: new ObjectId(case_id)
+                }
+            }, {
+                $lookup: {
+                    from: "lawyers",
+                    localField: "lawyer",
+                    foreignField: "_id",
+                    as: "lawyer"
+                }
+            }, {
+                $unwind: "$lawyer"
+            }, {
+                $unwind: "$codes"
+            }, {
+                $lookup: {
+                    from: "codes",
+                    localField: "codes",
+                    foreignField: "_id",
+                    as: "codes"
+                }
+            }, {
+                $unwind: "$codes"
+            }, {
+                $project: {
+                    _id: {
+                        $toString: "$_id"
+                    },
+                    date: 1,
+                    time_start: 1,
+                    time_end: 1,
+                    lawyer: {
+                        _id: {
+                            $toString: "$lawyer._id"
+                        },
+                        name: 1
+                    },
+                    codes: {
+                        _id: {
+                            $toString: "$codes._id"
+                        },
+                        code: 1,
+                        description: 1
+                    },
+                    description: 1
+                }
+            }, {
+                $group: {
+                    _id: "$_id",
+                    date: {
+                        $first: "$date"
+                    },
+                    time_start: {
+                        $first: "$time_start"
+                    },
+                    time_end: {
+                        $first: "$time_end"
+                    },
+                    lawyer: {
+                        $first: "$lawyer"
+                    },
+                    codes: {
+                        $push: "$codes"
+                    },
+                    description: {
+                        $first: "$description"
+                    }
+                }
+            }, {
+                $sort: {
+                    _id: -1
+                }
+            }, {
+                $skip: skip != null ? (skip < 0 ? 0 : skip) : 0
+            }, {
+                $limit: limit ? (limit <= 0 ? 1 : limit) : 1
+            }]).then(docs =>
+                event.sender.send(channel, id, docs)
+            ),
 
 		delete: (event, id, _id, channel) =>
 			spook.models.Log.remove({_id: _id}),
         
-        deleteAll: (event, id, client, channel) =>
-            spook.models.Log.remove(client)
+        deleteAll: (event, id, case_matter, channel) =>
+            spook.models.Log.remove({case: case_matter})
 	},
 
 	Lawyer: {
@@ -592,6 +590,30 @@ let filter = {
 				)
 			);
 		}
+	},
+
+	Case: {
+        new: (event, id, properties, channel) => {
+            console.log(properties);
+
+            properties.client = new ObjectId(properties.client);
+            properties.name = new ObjectId(properties.name);
+
+
+            spook.models.Case.new(properties, doc =>
+                event.sender.send(
+                    channel,
+                    id,
+                    doc && doc._id.toString()
+                )
+            )
+        },
+
+        delete: (event, id, _id, channel) =>
+            spook.models.Case.remove({_id: _id}),
+
+        deleteAll: (event, id, client, channel) =>
+            spook.models.Case.remove({client: client})
 	}
 };
 

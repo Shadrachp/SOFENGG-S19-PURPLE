@@ -131,7 +131,7 @@ const mod_relay = {
 			"edit",
 			"get",
             "delete",
-            "DeleteAll"
+            "deleteAll"
 		],
 		Lawyer: [
 			/**
@@ -223,8 +223,16 @@ const mod_relay = {
 			**/
 			"get",
 			"getOne"
-		]
-	}
+		],
+        Case: [
+            "new",
+            "edit",
+            "get",
+            "getOne",
+			"delete",
+			"deleteAll"
+        ]
+	};
 
 
 	spook.waitForChildren(_ => {

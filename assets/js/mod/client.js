@@ -33,13 +33,14 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 	);
     
     //send the ObjectId of client - Shad
-    mod_client.delete = (client) => {
+    mod_client.delete = (client, case_matter) => {
         mod_relay.Client.delete(
             conversation_id,
             client
         );
-        mode_relay.Log.deleteAll(client);
-    }
+        mode_relay.Case.deleteAll(client);
+        mode_relay.Log.deleteAll(case_matter);
+    };
     
 
 	mod_datastore.init(client_space, 128, 64, {

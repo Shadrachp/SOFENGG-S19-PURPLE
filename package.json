@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/Shadrachp/SOFENGG-S19-PURPLE#readme",
   "dependencies": {
-    "mongoose": "^5.3.6"
+    "mongoose": "^5.3.14"
   }
 }

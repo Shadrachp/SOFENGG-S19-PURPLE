@@ -22,11 +22,23 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		mod_client.init();
 	};
 
-	mod_client.edit = (name, properties) => mod_relay.Client.edit(
+	mod_client.edit = (name, properties) => 
+		mod_relay.Client.edit(
 		conversation_id,
 		name,
 		properties
 	);
+	
+
+	 //send the ObjectId of client - Shad
+	 mod_client.delete = (name) => 
+		mod_relay.Client.delete(
+			conversation_id,
+			name
+		);
+		// mod_relay.Log.deleteAll(name);
+	 
+    
 
 	mod_datastore.init(client_space, 128, 64, {
 		getter: (skip, limit) =>
@@ -131,7 +143,6 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		},
 
 		remove: doc => {
-			console.log(doc);
 			doc.btn.remove();
 
 			if (mod_client.selected != doc)

@@ -1452,6 +1452,14 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	color: #fff;
 }
 
+#pref_popup_delete_lawyer {
+	display: block;
+	margin: 0 32px;
+	width: calc(100% - 64px);
+	background-color: var(--danger);
+	color: #fff;
+	margin-top: 24px;
+}
 
 
 

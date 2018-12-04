@@ -123,12 +123,15 @@ const mod_relay = {
 			 * specifically requested. `null` if nothing was found.
 			**/
 			"get",
-			"getOne"
+			"getOne",
+            "delete"
 		],
 		Log: [
 			"new",
 			"edit",
-			"get"
+			"get",
+            "delete",
+            "deleteAll"
 		],
 		Lawyer: [
 			/**
@@ -174,7 +177,8 @@ const mod_relay = {
 			 * specifically requested. `null` if nothing was found.
 			**/
 			"get",
-			"getOne"
+			"getOne",
+			"delete"
 		],
 		Code: [
 			/**
@@ -225,7 +229,9 @@ const mod_relay = {
 			"new",
 			"edit",
 			"get",
-			"getOne"
+			"getOne",
+			"delete",
+			"deleteAll"
 		]
 	}
 

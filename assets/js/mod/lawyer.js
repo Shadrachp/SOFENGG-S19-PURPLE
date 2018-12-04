@@ -36,6 +36,12 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		properties
 	);
 
+	mod_lawyer.delete = (name) => 
+		mod_relay.Lawyer.delete(
+			conversation_id,
+			name
+		);
+
 	mod_datastore.init(lawyer_space, 128, 64, {
 		getter: (skip, limit) =>
 			mod_relay.Lawyer.get(
@@ -110,7 +116,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			if (index == null)
 				lawyer_space.appendChild(doc.btn);
 			else
-			lawyer_space.insertBefore(
+				lawyer_space.insertBefore(
 					doc.btn,
 					lawyer_space.childNodes[index]
 				);

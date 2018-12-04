@@ -112,6 +112,44 @@ mod_pref_lawyer.setConversationID = _ => _;
 		});
 	});
 
+	pref_popup_danger.addEventListener("click", _ => {
+
+		mod_loading.show();
+
+		// Deletes the current highlighted name 
+		// not necessarily the name in the text field.
+		mod_client.delete(
+			target.key
+		)(flag => {
+			mod_loading.hide();
+
+			if (flag) {
+				let key = pref_popup_name.value.toUpperCase();
+				
+				// delete from interface
+				mod_client.remove(key);
+				
+				// selects first client in interface if any
+				let c = client_space.getElementsByTagName("label");
+				if (c.length != 0)
+					c[0].click();
+				
+				pref_popup.setAttribute("invisible", 1);
+
+				vergil(
+					"<label style=color:var(--success)>" +
+					"Client successfully deleted!" +
+					"</label>"
+				);
+			}
+			else vergil(
+				"<label style=color:var(--warning)>" +
+				"Error! Unable to delete client." +
+				"</label>"
+			);
+		});
+	});
+
 	mod_pref_lawyer.setConversationID = hash => conversation_id = hash;	
 
 // 	// The lawyer that is being modified by the preferences window.
@@ -198,6 +236,44 @@ mod_pref_lawyer.setConversationID = _ => _;
 			} else fn(
 				"<label style=color:var(--warning)>" +
 				"Lawyer: That name is already in use!" +
+				"</label>"
+			);
+		});
+	});
+
+	pref_popup_delete_lawyer.addEventListener("click", _ => {
+
+		mod_loading.show();
+
+		// Deletes the current highlighted name 
+		// not necessarily the name in the text field.
+		mod_lawyer.delete(
+			lawyer_target.key
+		)(flag => {
+			mod_loading.hide();
+
+			if (flag) {
+				let key = pref_popup_name_lawyer.value.toUpperCase();
+				
+				// delete from interface
+				mod_lawyer.remove(key);
+				
+				// selects first client in interface if any
+				let c = lawyer_space.getElementsByTagName("label")
+				if (c.length != 0)
+					c[0].click();
+				
+				pref_popup.setAttribute("invisible", 1);
+
+				vergil(
+					"<label style=color:var(--success)>" +
+					"Lawyer successfully deleted!" +
+					"</label>"
+				);
+			}
+			else vergil(
+				"<label style=color:var(--warning)>" +
+				"Error! Unable to delete Lawyer." +
 				"</label>"
 			);
 		});

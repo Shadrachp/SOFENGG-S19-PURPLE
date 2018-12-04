@@ -247,7 +247,31 @@ let filter = {
 					}
 				)
 			);
-		}
+		},
+		
+		delete: (event, id, hash, name, channel) =>{
+            if (conversation.hash != hash)
+				return event.sender.send(channel, id);
+			
+			spook.models.Client.findOne({
+				user: conversation.id,
+				name: new RegExp(literalRegExp(name), "i")
+			}).then(doc => {
+				if (doc) {	
+					doc.remove();
+					doc.save((err, doc) =>
+						event.sender.send(
+							channel,
+							id,
+							err ? false : true
+						)
+					);
+				}
+				else
+					event.sender.send(channel, id, false);
+			});	
+			
+        }
 	},
 
 	Log: {
@@ -360,7 +384,13 @@ let filter = {
 				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
 			}]).then(docs =>
 				event.sender.send(channel, id, docs)
-			)
+			),
+			
+			delete: (event, id, _id, channel) =>
+				spook.models.Log.remove({_id: _id}),
+        
+			deleteAll: (event, id, client, channel) =>
+				spook.models.Log.remove(client)
 	},
 
 	Lawyer: {
@@ -480,7 +510,31 @@ let filter = {
 					}
 				)
 			);
+		},
+
+		delete: (event, id, hash, name, channel) =>{
+			if (conversation.hash != hash)
+				return event.sender.send(channel, id);
+
+			spook.models.Lawyer.findOne({
+				user: conversation.id,
+				name: new RegExp(literalRegExp(name), "i")
+			}).then(doc => {
+				if (doc) {	
+					doc.remove();
+					doc.save((err, doc) =>
+						event.sender.send(
+							channel,
+							id,
+							err ? false : true
+						)
+					);
+				}
+				else
+					event.sender.send(channel, id, false);
+			});	
 		}
+
 	},
 
 	Code: {

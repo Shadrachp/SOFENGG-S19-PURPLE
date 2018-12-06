@@ -10,28 +10,11 @@ const mod_client = {
 		"draggable=false>"
 };
 
-mod_client.setConversationID = _ => _;
-
 spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
-	let conversation_id;
-
-	mod_client.setConversationID = hash => {
-		conversation_id = hash;
-
-		mod_client_popup.setConversationID(hash);
-		mod_client.init();
-	};
-
-	mod_client.edit = (name, properties) => mod_relay.Client.edit(
-		conversation_id,
-		name,
-		properties
-	);
-
 	mod_datastore.init(client_space, 128, 64, {
 		getter: (skip, limit) =>
 			mod_relay.Client.get(
-				conversation_id,
+				mod_login.getUserId(),
 				skip,
 				limit,
 				client_search.value
@@ -56,9 +39,6 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 				doc = mod_client.selected;
 			} else {
 				doc.key = doc.key || doc.name.toUpperCase();
-				doc.time = doc.time == null ? 0 : doc.time;
-				doc.logs_count =
-					doc.logs_count == null ? 0 : doc.logs_count;
 				doc.case_space = q(
 					"#case_space !div " +
 					"class=case_space " +
@@ -86,7 +66,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 
 			btn.addEventListener("click", event => {
 				if (event.target != btn)
-					return mod_pref.show(doc);
+					return mod_client_edit.show(doc);
 
 				let prev = mod_client.selected;
 
@@ -104,16 +84,25 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 
 
 				info_name.innerHTML = doc.name;
-				mod_info.stats_time_update(doc.time);
-				mod_info.stats_log_update(doc.logs_count);
 
 				mod_client.selected = doc;
 				doc.case_space.removeAttribute("invisible");
 				btn.setAttribute("selected", 1);
 
-				if (doc.cases.selected)
+				if (doc.cases.selected) {
+					mod_info.stats_time_update(
+						doc.cases.selected.time
+					);
+					mod_info.stats_log_update(
+						doc.cases.selected.logs_count
+					);
+
 					doc.cases.selected.log_space
 						.removeAttribute("invisible");
+				} else {
+					mod_info.stats_time_update(0);
+					mod_info.stats_log_update(0);
+				}
 			});
 
 			if (!mod_client.selected)
@@ -175,10 +164,6 @@ client_new.addEventListener("click", _ => {
 	client_popup.removeAttribute("invisible");
 	client_popup_input.focus();
 });
-
-ctrl_pref.addEventListener("click", _ =>
-	mod_pref.show(mod_client.selected)
-);
 
 tipper(client_new, "New Client");
 

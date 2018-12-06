@@ -74,11 +74,14 @@ spook.load([
 	"mod/menu",
 	"mod/datastore",
 	"mod/cosmetics",
+	"mod/delete_popup",
 	"mod/client",
 	"mod/client_popup",
+	"mod/client_edit",
 	"mod/info",
 	"mod/lawyer",
 	"mod/lawyer_popup",
+	"mod/lawyer_edit",
 	"mod/code",
 	"mod/code_popup",
 	"mod/case",
@@ -87,7 +90,6 @@ spook.load([
 	"mod/log_popup",
 	"mod/bill_popup",
 	"mod/login",
-	"mod/pref_popup",
 	"mod/preload",
 	"mod/sebastian" // Keep `sebastian.js` at the bottom.
 ]);

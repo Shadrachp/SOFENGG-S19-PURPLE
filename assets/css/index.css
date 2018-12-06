@@ -1179,6 +1179,10 @@ img#ctrl_logout {
 	overflow: hidden;
 }
 
+.log_space > *[billed]:not(:hover):not([expand]) {
+	opacity: 0.4;
+}
+
 .log_space > * > div {
 	display: none;
 }
@@ -1464,9 +1468,40 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 
 
 
-/*-- `pref_popup` --*/
+/*-- `delete_popup` --*/
 
-#pref_popup > div {
+#delete_popup > div > label {
+	display: block;
+	margin: 32px;
+	font-size: 18px;
+}
+
+#delete_popup_name {
+	color: var(--info);
+	font-weight: bold;
+}
+
+#delete_popup_no {
+	margin-left: 32px;
+	margin-bottom: 16px;
+	color: #fff;
+	background-color: var(--cancel);
+}
+
+#delete_popup_yes {
+	float: right;
+	margin-right: 32px;
+	margin-bottom: 16px;
+	color: #fff;
+	background-color: var(--danger);
+}
+
+
+
+
+/*-- `edit_popup` --*/
+
+.edit_popup > div {
 	width: 320px;
 	max-height: calc(100% - 64px);
 	padding: 16px;
@@ -1474,7 +1509,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	overflow-y: auto;
 }
 
-.pref_popup_label {
+.edit_popup_label {
 	display: block;
 	margin: 8px;
 	margin-bottom: 0;
@@ -1483,7 +1518,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	font-size: 18px;
 }
 
-#pref_popup > div > input {
+.edit_popup > div > input {
 	display: inline-block;
 	width: calc(100% - 48px);
 	padding: 8px 12px;
@@ -1493,13 +1528,13 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	font-size: 14px;
 }
 
-#pref_popup > div > sep {
+.edit_popup > div > sep {
 	display: block;
 	margin: 32px;
 	border-bottom: 4px dotted var(--warning);
 }
 
-#pref_popup_close {
+.edit_popup_close {
 	position: absolute;
 	top: 8px;
 	right: 8px;
@@ -1511,22 +1546,17 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	transition: all 0.2s;
 }
 
-#pref_popup_close:hover {
+.edit_popup_close:hover {
 	box-shadow: 0 0 1px #000;
 }
 
-#pref_popup_close:active {
+.edit_popup_close:active {
 	box-shadow: 0 0 1px #000;
 	filter: brightness(80%);
 	transition: all 0.1s;
 }
 
-#pref_popup_hide {
-	margin-top: 16px;
-	margin-left: 8px;
-}
-
-#pref_popup_danger {
+.edit_popup_danger {
 	display: block;
 	margin: 0 32px;
 	width: calc(100% - 64px);

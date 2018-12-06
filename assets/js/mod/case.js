@@ -71,6 +71,9 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 							prev.log_space.remove();
 					}
 
+					mod_info.stats_time_update(doc.time);
+					mod_info.stats_log_update(doc.logs_count);
+
 					cases.selected = doc;
 					btn.setAttribute("selected", 1);
 

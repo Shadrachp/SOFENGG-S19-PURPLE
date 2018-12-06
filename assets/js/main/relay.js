@@ -13,11 +13,6 @@ const spook = require("../spook.js");
 const database = require("./database.js");
 const ObjectId = mongoose.Types.ObjectId;
 
-const conversation = {
-	hash: Math.random().toString(),
-	id: null
-};
-
 
 
 
@@ -103,22 +98,14 @@ let filter = {
 			spook.models.User.findOne({
 				username
 			}).then(doc => {
-				if (doc) {
-					// Make a conversation ID.
-					conversation.hash = crypto.createHash("sha256")
-						.update(conversation.hash)
-						.digest("hex");
-					conversation.id = doc._id;
-				}
-
 				event.sender.send(
 					channel,
 					id,
 					doc ? (
 						doc.password == crypto.createHash("sha256")
 						.update(password).digest("hex") ?
-						// Correct username and password. Return hash.
-						conversation.hash :
+						// Correct username and password. Return _id.
+						doc._id.toString() :
 						// Incorrect password.
 						1
 						// No such username.
@@ -129,12 +116,10 @@ let filter = {
 
 	Client: {
 		new: (event, id, properties, channel) => {
-			if (!properties.hasOwnProperty("user") ||
-				properties.user != conversation.hash)
-				return event.sender.send(channel, id);
+			properties.user = new ObjectId(properties.user);
 
 			spook.models.Client.findOne({
-				user: conversation.id,
+				user: properties.user,
 				name: new RegExp(
 					"^" +
 						literalRegExp(properties.name) +
@@ -142,9 +127,7 @@ let filter = {
 					"i"
 				)
 			}).then(doc => {
-				if (!doc) {
-					properties.user = conversation.id;
-
+				if (!doc)
 					spook.models.Client.new(properties, doc =>
 						event.sender.send(
 							channel,
@@ -152,18 +135,14 @@ let filter = {
 							doc && doc._id.toString()
 						)
 					);
-				} else
+				else
 					event.sender.send(channel, id);
 			});
 		},
 
-		edit: (event, id, hash, name, properties, channel) => {
-			if (conversation.hash != hash)
-				return event.sender.send(channel, id);
-
+		edit: (event, id, _id, properties, channel) =>
 			spook.models.Client.findOne({
-				user: conversation.id,
-				name: new RegExp(literalRegExp(name), "i")
+				_id: new ObjectId(_id)
 			}).then(doc => {
 				if (doc) {
 					doc.set(properties);
@@ -176,16 +155,12 @@ let filter = {
 					);
 				} else
 					event.sender.send(channel, id, false);
-			});
-		},
+			}),
 
-		get: (event, id, hash, skip, limit, filter, channel) => {
-			if (conversation.hash != hash)
-				return event.sender.send(channel, id);
-
+		get: (event, id, user_id, skip, limit, filter, channel) => {
 			let pipeline = [{
 				$match: {
-					user: conversation.id
+					user: new ObjectId(user_id)
 				}
 			}, {
 				$project: {
@@ -223,12 +198,9 @@ let filter = {
 			);
 		},
 
-		getOne: (event, id, hash, key, channel) => {
-			if (conversation.hash != hash)
-				return event.sender.send(channel, id);
-
+		getOne: (event, id, user_id, key, channel) => {
 			spook.models.Client.findOne({
-				user: conversation.id,
+				user: new ObjectId(user_id),
 				name: new RegExp(
 					"^" +
 						literalRegExp(key) +
@@ -246,6 +218,44 @@ let filter = {
 						logs_count: doc.logs_count
 					}
 				)
+			);
+		},
+
+		delete: (event, id, _id, channel) => {
+			let n = 3;
+			let fn = _ => {
+				n--;
+
+				if (n)
+					return;
+
+				event.sender.send(channel, id, true);
+			}
+
+			_id = new ObjectId(_id);
+
+			spook.models.Case.find({
+				client: _id
+			}).then(docs => {
+				let query = {
+					$in: docs.map(doc => doc._id)
+				};
+
+				spook.models.Case.deleteMany({_id: query})
+				.exec()
+				.then(fn);
+
+				spook.models.Log.deleteMany({case: query})
+				.exec()
+				.then(fn);
+			});
+
+			spook.models.Client
+			.deleteOne({_id})
+			.exec()
+			.then(res =>
+				res.ok && res.n ?
+				fn() : event.sender.send(channel, id, false)
 			);
 		}
 	},
@@ -303,9 +313,7 @@ let filter = {
 					date: 1,
 					time_start: 1,
 					time_end: 1,
-					lawyer: {
-						$toString: "$lawyer"
-					},
+					lawyer: 1,
 					codes: 1,
 					description: 1,
 					billed: 1
@@ -338,11 +346,14 @@ let filter = {
 					};
 
 					spook.models.Lawyer.findOne({
-						_id: new ObjectId(doc.lawyer)
+						_id: doc.lawyer
 					}).then(lawyer_doc => {
-						doc.lawyer = {
+						doc.lawyer = lawyer_doc ? {
 							_id: lawyer_doc._id.toString(),
 							name: lawyer_doc.name
+						} : {
+							_id: "",
+							name: ""
 						};
 
 						fn1();
@@ -374,17 +385,43 @@ let filter = {
 						fn1();
 				});
 			});
+		},
+
+		delete: (event, id, _id, channel) => {
+			let n = 2;
+			let fn = _ => {
+				n--;
+
+				if (n)
+					return;
+
+				event.sender.send(channel, id, true);
+			}
+
+			_id = new ObjectId(_id);
+
+			spook.models.Log.findOne({_id}).then(doc => {
+				spook.models.Case.findOne({_id: doc.case})
+				.then(case_doc => {
+					case_doc.logs_count--;
+					case_doc.time -= doc.time_end - doc.time_start;
+
+					case_doc.save(fn);
+				});
+
+				spook.models.Log.deleteOne({_id})
+				.exec()
+				.then(fn);
+			});
 		}
 	},
 
 	Lawyer: {
 		new: (event, id, properties, channel) => {
-			if (!properties.hasOwnProperty("user") ||
-				properties.user != conversation.hash)
-				return event.sender.send(channel, id);
+			properties.user = new ObjectId(properties.user);
 
 			spook.models.Lawyer.findOne({
-				user: conversation.id,
+				user: properties.user,
 				name: new RegExp(
 					"^" +
 						literalRegExp(properties.name) +
@@ -392,9 +429,7 @@ let filter = {
 					"i"
 				)
 			}).then(doc => {
-				if (!doc) {
-					properties.user = conversation.id;
-
+				if (!doc)
 					spook.models.Lawyer.new(properties, doc =>
 						event.sender.send(
 							channel,
@@ -402,18 +437,16 @@ let filter = {
 							doc && doc._id.toString()
 						)
 					);
-				} else
+				else
 					event.sender.send(channel, id);
 			});
 		},
 
-		edit: (event, id, hash, name, properties, channel) => {
-			if (conversation.hash != hash)
-				return event.sender.send(channel, id);
+		edit: (event, id, _id, properties, channel) => {
+			_id = new ObjectId(_id);
 
 			spook.models.Lawyer.findOne({
-				user: conversation.id,
-				name
+				_id,
 			}).then(doc => {
 				if (doc) {
 					doc.set(properties);
@@ -429,13 +462,10 @@ let filter = {
 			});
 		},
 
-		get: (event, id, hash, skip, limit, filter, channel) => {
-			if (conversation.hash != hash)
-				return event.sender.send(channel, id);
-
+		get: (event, id, user_id, skip, limit, filter, channel) => {
 			let pipeline = [{
 				$match: {
-					user: conversation.id
+					user: new ObjectId(user_id)
 				}
 			}, {
 				// We only need the name.
@@ -472,12 +502,9 @@ let filter = {
 			);
 		},
 
-		getOne: (event, id, hash, key, channel) => {
-			if (conversation.hash != hash)
-				return event.sender.send(channel, id);
-
+		getOne: (event, id, user_id, key, channel) => {
 			spook.models.Lawyer.findOne({
-				user: conversation.id,
+				user: new ObjectId(user_id),
 				name: new RegExp(
 					"^" +
 						literalRegExp(key) +
@@ -493,6 +520,42 @@ let filter = {
 						name: doc.name
 					}
 				)
+			);
+		},
+
+		delete: (event, id, _id, channel) => {
+			let n = 2;
+			let fn = _ => {
+				n--;
+
+				if (n)
+					return;
+
+				event.sender.send(channel, id, true);
+			}
+
+			_id = new ObjectId(_id);
+
+			spook.models.Log.find({
+				lawyer: _id
+			}).then(docs => {
+				n += docs.length;
+
+				docs.forEach(doc => {
+					doc.lawyer = "";
+
+					doc.save(fn);
+				});
+
+				fn();
+			});
+
+			spook.models.Lawyer
+			.deleteOne({_id})
+			.exec()
+			.then(res =>
+				res.ok && res.n ?
+				fn() : event.sender.send(channel, id, false)
 			);
 		}
 	},

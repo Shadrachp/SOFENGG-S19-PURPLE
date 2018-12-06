@@ -12,209 +12,193 @@ const mod_log_popup = {
 	}
 };
 
-mod_log_popup.setConversationID = _ => _;
+// User clicked the log creation interface's submit button.
+log_popup_ctrl_submit.addEventListener("click", _ => {
+	let data = {
+		date: new Date(
+			log_popup_date.value ||
+			log_popup_date.placeholder
+		),
+		time_start: lemon.time.toMilitary_split(
+			log_popup_start.value ||
+			log_popup_start.placeholder
+		).reduce((a, b, i) => a + b * (!i ? 60 : 1), 0),
+		time_end: lemon.time.toMilitary_split(
+			log_popup_end.value ||
+			log_popup_end.placeholder
+		).reduce((a, b, i) => a + b * (!i ? 60 : 1), 0)
+	};
+	let txt = "";
+	let n = 2;
+	let fna = _ => {
+		n--;
 
-{
-	let conversation_id;
+		if (n)
+			return;
 
-	mod_log_popup.setConversationID = hash => conversation_id = hash;
+		mod_loading.hide();
 
-	// User clicked the log creation interface's submit button.
-	log_popup_ctrl_submit.addEventListener("click", _ => {
-		let data = {
-			date: new Date(
-				log_popup_date.value ||
-				log_popup_date.placeholder
-			),
-			time_start: lemon.time.toMilitary_split(
-				log_popup_start.value ||
-				log_popup_start.placeholder
-			).reduce((a, b, i) => a + b * (!i ? 60 : 1), 0),
-			time_end: lemon.time.toMilitary_split(
-				log_popup_end.value ||
-				log_popup_end.placeholder
-			).reduce((a, b, i) => a + b * (!i ? 60 : 1), 0)
-		};
-		let txt = "";
-		let n = 2;
-		let fna = _ => {
-			n--;
+		if (data.time_start == data.time_end)
+			return vergil(
+				"<div " +
+				"style=color:var(--warning)>" +
+				"You can't create a log with the " +
+				"<b>starting time</b> the same as the " +
+				"<b>ending time</b>!</div>",
+				2600
+			);
 
-			if (n)
-				return;
-
-			mod_loading.hide();
-
-			if (data.time_start == data.time_end)
-				return vergil(
-					"<div " +
-					"style=color:var(--warning)>" +
-					"You can't create a log with the " +
-					"<b>starting time</b> the same as the " +
-					"<b>ending time</b>!</div>",
-					2600
-				);
-
-			if (txt.length)
-				return vergil(
-					"<div " +
-					"style=color:var(--warning);text-align:left;>" +
-					"Please fill up the entire form.<small>" + txt +
-					"</small></div>",
-					2600
-				);
-
-			mod_loading.show();
-
-			let fn = docs => {
-				for (let i in docs) {
-					let doc = docs[i];
-
-					if (data.date.toJSON() === doc.date &&
-						lemon.intersectRange(
-							data.time_start, data.time_end,
-							doc.time_start, doc.time_end
-						) >= 0) {
-						mod_loading.hide();
-
-						return vergil(
-							"<div style=color:var(--warning)>" +
-							"An existing log's date and time " +
-							"overlaps with this log!</div>",
-							2600
-						);
-					}
-				}
-
-				let client = mod_client.selected;
-				let case_space = client.cases.selected;
-
-				mod_relay.Log.new({
-					case: case_space._id,
-					date: data.date.toJSON(),
-					time_start: data.time_start,
-					time_end: data.time_end,
-					lawyer: data.lawyer._id,
-					codes: data.codes.map(doc => doc._id),
-					description: data.description
-				})(_id => {
-					mod_loading.hide();
-
-					if (!_id)
-						return vergil(
-							"<div style=color:var(--warning);>" +
-							"Log creation failed..." +
-							"</div>",
-							1800
-						);
-
-					document.activeElement.blur();
-					log_popup.setAttribute("invisible", 1);
-
-					data._id = _id;
-
-					client.time += data.time_end - data.time_start;
-					client.logs_count++;
-
-					case_space.time += data.time_end - data.time_start;
-					case_space.logs_count++;
-
-					mod_client.edit(client.name, {
-						time: client.time,
-						logs_count: client.logs_count
-					})(_ => _);
-
-					mod_relay.Case.edit(case_space._id, {
-						time: case_space.time,
-						logs_count: case_space.logs_count
-					})(_ => _);
-
-					case_space.logs.new(data, true);
-
-					mod_info.stats_time_update(client.time);
-					mod_info.stats_log_update(client.logs_count);
-
-					vergil(
-						"<div style=color:var(--success);>" +
-						"Log successfully created!" +
-						"</div>",
-						1800
-					);
-				});
-			};
-
-			mod_client.selected
-				.cases.selected.logs.getNotBilled()(fn);
-		};
-		let fnb = k => {
-			if (k)
-				txt = mod_log_popup.notif_empty[k] + txt;
-
-			fna();
-		};
+		if (txt.length)
+			return vergil(
+				"<div " +
+				"style=color:var(--warning);text-align:left;>" +
+				"Please fill up the entire form.<small>" + txt +
+				"</small></div>",
+				2600
+			);
 
 		mod_loading.show();
 
-		// Verify description.
+		let fn = docs => {
+			for (let i in docs) {
+				let doc = docs[i];
 
-		if (log_popup_desc.innerText.search(/\S/) > -1)
-			data.description = log_popup_desc.innerText;
-		else
-			txt = mod_log_popup.notif_empty.description;
+				if (data.date.toJSON() === doc.date &&
+					lemon.intersectRange(
+						data.time_start, data.time_end,
+						doc.time_start, doc.time_end
+					) >= 0) {
+					mod_loading.hide();
+
+					return vergil(
+						"<div style=color:var(--warning)>" +
+						"An existing log's date and time " +
+						"overlaps with this log!</div>",
+						2600
+					);
+				}
+			}
+
+			let client = mod_client.selected;
+			let case_space = client.cases.selected;
+
+			mod_relay.Log.new({
+				case: case_space._id,
+				date: data.date.toJSON(),
+				time_start: data.time_start,
+				time_end: data.time_end,
+				lawyer: data.lawyer._id,
+				codes: data.codes.map(doc => doc._id),
+				description: data.description
+			})(_id => {
+				mod_loading.hide();
+
+				if (!_id)
+					return vergil(
+						"<div style=color:var(--warning);>" +
+						"Log creation failed..." +
+						"</div>",
+						1800
+					);
+
+				document.activeElement.blur();
+				log_popup.setAttribute("invisible", 1);
+
+				data._id = _id;
+
+				case_space.time += data.time_end - data.time_start;
+				case_space.logs_count++;
+
+				mod_relay.Case.edit(case_space._id, {
+					time: case_space.time,
+					logs_count: case_space.logs_count
+				})(_ => _);
+
+				case_space.logs.new(data, true);
+
+				mod_info.stats_time_update(case_space.time);
+				mod_info.stats_log_update(case_space.logs_count);
+
+				vergil(
+					"<div style=color:var(--success);>" +
+					"Log successfully created!" +
+					"</div>",
+					1800
+				);
+			});
+		};
+
+		mod_client.selected
+			.cases.selected.logs.getNotBilled()(fn);
+	};
+	let fnb = k => {
+		if (k)
+			txt = mod_log_popup.notif_empty[k] + txt;
+
+		fna();
+	};
+
+	mod_loading.show();
+
+	// Verify description.
+
+	if (log_popup_desc.innerText.search(/\S/) > -1)
+		data.description = log_popup_desc.innerText;
+	else
+		txt = mod_log_popup.notif_empty.description;
 
 
-		// Verify lawyer.
+	// Verify lawyer.
 
-		if (log_popup_lawyer.value)
-			mod_relay.Lawyer.getOne(
-				conversation_id,
-				log_popup_lawyer.value
+	if (log_popup_lawyer.value)
+		mod_relay.Lawyer.getOne(
+			mod_login.getUserId(),
+			log_popup_lawyer.value
+		)(doc => {
+			if (doc)
+				data.lawyer = {
+					_id: doc._id,
+					name: doc.name
+				};
+
+			fnb(!doc ? "lawyer" : null);
+		});
+	else
+		fnb("lawyer");
+
+
+	// Verify codes.
+
+	let list = log_popup_code.getElementsByTagName("label");
+	if (list.length > 1) {
+		let codes = [];
+		let count = list.length - 1;
+		let fn = _ => {
+			count--;
+
+			if (count)
+				return;
+
+			data.codes = codes;
+
+			fnb(codes.length < list.length - 1 ? "code" : null);
+		};
+
+		for (let i = 1; i < list.length; i++)
+			mod_relay.Code.getOne(
+				list[i].innerText
 			)(doc => {
 				if (doc)
-					data.lawyer = {
+					codes.push({
 						_id: doc._id,
-						name: doc.name
-					};
+						code: doc.code
+					});
 
-				fnb(!doc ? "lawyer" : null);
+				fn();
 			});
-		else
-			fnb("lawyer");
-
-
-		// Verify codes.
-
-		let list = log_popup_code.getElementsByTagName("label");
-		if (list.length > 1) {
-			let codes = [];
-			let count = list.length - 1;
-			let fn = _ => {
-				count--;
-
-				if (count)
-					return;
-
-				data.codes = codes;
-
-				fnb(codes.length < list.length - 1 ? "code" : null);
-			};
-
-			for (let i = 1; i < list.length; i++)
-				mod_relay.Code.getOne(
-					list[i].innerText
-				)(doc => {
-					if (doc)
-						codes.push({
-							_id: doc._id,
-							code: doc.code
-						});
-
-					fn();
-				});
-		} else
-			fnb("code");
-	});
-}
+	} else
+		fnb("code");
+});
 
 ctrl_log.addEventListener("click", _ => {
 	if (!mod_client.selected.cases.selected)

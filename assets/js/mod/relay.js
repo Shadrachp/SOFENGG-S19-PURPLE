@@ -123,7 +123,8 @@ const mod_relay = {
 			 * specifically requested. `null` if nothing was found.
 			**/
 			"get",
-			"getOne"
+			"getOne",
+			"delete"
 		],
 		Log: [
 			"new",
@@ -174,7 +175,8 @@ const mod_relay = {
 			 * specifically requested. `null` if nothing was found.
 			**/
 			"get",
-			"getOne"
+			"getOne",
+			"delete"
 		],
 		Code: [
 			/**

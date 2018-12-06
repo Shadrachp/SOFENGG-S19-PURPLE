@@ -28,7 +28,6 @@ const mod_bill_popup = {
 			);
 		}
 
-		console.log(target)
 		let fee = target.time * target.rate;
 
 		bill_popup_vatfee.innerHTML = fee * target.vat;
@@ -65,17 +64,17 @@ const mod_bill_popup = {
 				client,
 				case: casematter,
 				logs: docs,
-				date_from: new Date(docs[0].date).toLocaleDateString(),
-				date_to: new Date(docs[docs.length - 1].date)
+				date_from: new Date(docs[docs.length - 1].date)
 					.toLocaleDateString(),
+				date_to: new Date(docs[0].date).toLocaleDateString(),
+				logs_count: docs.length,
 				time: docs.length > 1 ? docs.reduce((a, b) =>
 					(typeof(a) == "number" ?
 						a : (a.time_end - a.time_start)/60) +
 					(b.time_end - b.time_start)/60
 				) : (docs[0].time_end - docs[0].time_start)/60,
 				rate: 1000,
-				vat: 12/100,
-				included_count: docs.length
+				vat: 12/100
 			};
 
 			bill_popup_client.innerHTML = client.name;
@@ -108,8 +107,8 @@ const mod_bill_popup = {
 	});
 
 	bill_popup_vat.addEventListener("change", _ => {
-		if (!bill_popup_vat.value || bill_popup_vat.value < 0)
-			bill_popup_vat.value = 0;
+		bill_popup_vat.value =
+			Math.min(100, Math.max(bill_popup_vat.value, 0));
 
 		target.vat = bill_popup_vat.value/100;
 
@@ -124,7 +123,7 @@ const mod_bill_popup = {
 	});
 
 	bill_popup_submit.addEventListener("click", _ => {
-		if (!target.included_count)
+		if (!target.logs_count)
 			return vergil(
 				"<div style=color:var(--warning)>" +
 				"There are no logs included in the bill!</div>",
@@ -143,16 +142,22 @@ const mod_bill_popup = {
 
 		mod_excel.generate(target, flag => {
 			if (flag == true) {
-				let n = target.logs.length;
+				let n = target.logs.length + 1;
 				let fn = _ => {
 					n--;
 
 					if (n)
 						return;
 
-					target = null;
-
 					bill_popup.setAttribute("invisible", 1);
+
+					target.case.logs.flush();
+					target.case.logs.init();
+
+					mod_info.stats_time_update(target.case.time);
+					mod_info.stats_log_update(target.case.logs_count);
+
+					target = null;
 
 					vergil(
 						"<div style=color:var(--success)>" +
@@ -163,14 +168,29 @@ const mod_bill_popup = {
 					mod_loading.hide();
 				};
 
+				let time = 0;
+
 				target.logs.forEach(doc => {
-					if (!doc.include)
+					if (!doc.include) {
+						logs_count--;
+
 						return fn();
+					}
+
+					time += doc.time_end - doc.time_start;
 
 					mod_relay.Log.edit(doc._id, {
 						billed: true
 					})(fn);
 				});
+
+				target.case.logs_count -= target.logs_count;
+				target.case.time -= time;
+
+				mod_relay.Case.edit(target.case._id, {
+					logs_count: target.case.logs_count,
+					time: target.case.time
+				})(fn);
 			} else {
 				if (flag == false)
 					vergil(
@@ -212,16 +232,38 @@ const mod_bill_popup = {
 						if (elm.getAttribute("active") != null) {
 							doc.include = true;
 							target.time += hrs;
-							target.included_count++;
+							target.logs_count++;
 
 							tr.removeAttribute("exclude");
 						} else {
 							doc.include = false;
 							target.time -= hrs;
-							target.included_count--;
+							target.logs_count--;
 
 							tr.setAttribute("exclude", 1);
 						}
+
+						target.date_from = target.date_to = null;
+
+						for (let i = 0; i < docs.length; i++) {
+							if (docs[i].include)
+								target.date_to = new Date(docs[i].date)
+									.toLocaleDateString();
+
+							if (docs[docs.length - i - 1].include)
+								target.date_from = new Date(
+									docs[docs.length - i - 1].date
+									).toLocaleDateString();
+
+							if (target.date_from && target.date_to)
+								break;
+						}
+
+						bill_popup_date.innerHTML =
+							target.date_from ? (
+								target.date_from + " - " +
+								target.date_to
+							) : "N/A";
 
 						writeTotal();
 					});

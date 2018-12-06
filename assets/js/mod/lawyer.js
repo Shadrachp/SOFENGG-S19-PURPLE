@@ -14,23 +14,11 @@ const mod_lawyer = {
 		"<center small style=color:var(--info)>LOADING...</center>"
 };
 
-mod_lawyer.setConversationID = _ => _;
-
 spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
-	let conversation_id;
-
-	mod_lawyer.setConversationID = hash => {
-		conversation_id = hash;
-
-		mod_lawyer_popup.setConversationID(hash);
-		// Fill up the list with existing documents.
-		mod_lawyer.init();
-	};
-
 	mod_datastore.init(lawyer_space, 128, 64, {
 		getter: (skip, limit) =>
 			mod_relay.Lawyer.get(
-				conversation_id,
+				mod_login.getUserId(),
 				skip,
 				limit,
 				lawyer_search.value
@@ -39,6 +27,8 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		new: (doc, index) => {
 			if (doc.name.search(/\S/) == -1)
 				return;
+
+			doc.key = doc.name.toUpperCase();
 
 			let btn = doc.btn = q("#lawyer_space !label");
 			btn.innerHTML = doc.name;
@@ -51,8 +41,9 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 					lawyer_space.childNodes[index]
 				);
 
-			btn.addEventListener("click", event => {
-			});
+			btn.addEventListener("click", event =>
+				mod_lawyer_edit.show(doc)
+			);
 
 			return doc;
 		},
@@ -63,11 +54,11 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		},
 		move: (doc, index) => {
 			if (index == null)
-				client_space.appendChild(doc.btn);
+				lawyer_space.appendChild(doc.btn);
 			else
-				client_space.insertBefore(
+				lawyer_space.insertBefore(
 					doc.btn,
-					client_space.childNodes[index]
+					lawyer_space.childNodes[index]
 				);
 		}
 	})(mod_lawyer);
@@ -112,7 +103,12 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 					8
 				);
 
-				mod_relay.Lawyer.get(conversation_id, 0, 32, key)(docs => {
+				mod_relay.Lawyer.get(
+					mod_login.getUserId(),
+					0,
+					32,
+					key
+				)(docs => {
 					delete log_popup_lawyer_config.debounce[key];
 
 					if (log_popup_lawyer.value.toUpperCase() == key) {
@@ -169,7 +165,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			mod_loading.show();
 
 			mod_relay.Lawyer.getOne(
-				conversation_id,
+				mod_login.getUserId(),
 				log_popup_lawyer.value
 			)(doc => {
 				mod_loading.hide();

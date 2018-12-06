@@ -33,7 +33,6 @@
 				>New Log</button><button id=ctrl_bill
 					button="0"
 				>Billing</button>
-				<img id=ctrl_pref src=../img/preferences.png draggable=false>
 			</div>
 		</div>
 
@@ -48,10 +47,10 @@
 				<label>Client</label>
 				<label id=info_name></label>
 			</div><div class=info_entry>
-				<label>Accumulated Time</label>
+				<label>Time (Unbilled)</label>
 				<label id=info_time></label>
 			</div><div class=info_entry>
-				<label>Total Logs</label>
+				<label>Unbilled Logs</label>
 				<label id=info_log></label>
 			</div>
 		</div>
@@ -111,6 +110,48 @@
 					class=sidebar_space
 					scroll=0></div>
 			</div>
+		</div>
+	</div>
+
+	<div id=client_edit class=edit_popup popup invisible>
+		<dim></dim>
+		<div scroll="0">
+			<label class=edit_popup_label>Client Name</label>
+			<input id=client_edit_name type=text input_text="0">
+			<img id=client_edit_close class=edit_popup_close src=../img/close_small.png draggable=false>
+			<sep></sep>
+			<button id=client_edit_delete class=edit_popup_danger button="0">Delete This Client</button>
+		</div>
+	</div>
+
+	<div id=lawyer_edit class=edit_popup popup invisible>
+		<dim></dim>
+		<div scroll="0">
+			<label class=edit_popup_label>Lawyer Name</label>
+			<input id=lawyer_edit_name type=text input_text="0">
+			<img id=lawyer_edit_close class=edit_popup_close src=../img/close_small.png draggable=false>
+			<sep></sep>
+			<button id=lawyer_edit_delete class=edit_popup_danger button="0">Delete This Lawyer</button>
+		</div>
+	</div>
+
+	<div id=case_edit class=edit_popup popup invisible>
+		<dim></dim>
+		<div scroll="0">
+			<label class=edit_popup_label>Client Name</label>
+			<input id=case_edit_name type=text input_text="0">
+			<img id=case_edit_close class=edit_popup_close src=../img/close_small.png draggable=false>
+			<sep></sep>
+			<button id=case_edit_delete class=edit_popup_danger button="0">Delete This Client</button>
+		</div>
+	</div>
+
+	<div id=delete_popup popup invisible>
+		<dim></dim>
+		<div>
+			<label>Are you sure you want to delete this <label id=delete_popup_name></label>?</label>
+			<button id=delete_popup_no button="0">No</button>
+			<button id=delete_popup_yes button="0">Yes</button>
 		</div>
 	</div>
 
@@ -256,17 +297,6 @@
 			<input id=code_popup_desc type=text input_text=0>
 			<button id=code_popup_cancel button=0>Cancel</button>
 			<button id=code_popup_create button=0>Create</button>
-		</div>
-	</div>
-
-	<div id=pref_popup popup invisible>
-		<dim></dim>
-		<div scroll="0">
-			<label class=pref_popup_label>Client Name</label>
-			<input id=pref_popup_name type=text input_text="0">
-			<img id=pref_popup_close src=../img/close_small.png draggable=false>
-			<sep></sep>
-			<button id=pref_popup_danger button="0">Delete This Client</button>
 		</div>
 	</div>
 

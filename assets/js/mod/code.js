@@ -30,7 +30,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			if (doc.code.search(/\S/) == -1)
 				return;
 
-			let btn = doc.btn = q("!label");
+			let btn = doc.btn = q("!label disabled=1");
 			btn.innerHTML =
 				"<label>" + doc.code + "</label>" +
 				(doc.description || "");
@@ -42,9 +42,6 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 					btn,
 					code_space.childNodes[index]
 				);
-
-			btn.addEventListener("click", event => {
-			});
 
 			return doc;
 		},

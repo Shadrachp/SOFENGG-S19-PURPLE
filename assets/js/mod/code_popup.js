@@ -7,12 +7,15 @@
 **/
 [code_popup_code, code_popup_desc].map(v =>
 	v.addEventListener("keydown", event => {
-		if (event.keyCode == 13)
+		if (event.keyCode == 13) {
 			// Enter Key
 			code_popup_create.click();
-		else if (event.keyCode == 27)
+			document.activeElement.blur();
+		} else if (event.keyCode == 27) {
 			// Escape Key
 			code_popup.setAttribute("invisible", 1);
+			document.activeElement.blur();
+		}
 	})
 );
 

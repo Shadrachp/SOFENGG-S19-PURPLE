@@ -219,6 +219,13 @@ const mod_relay = {
 			 * specifically requested. `null` if nothing was found.
 			**/
 			"get",
+			"getOne",
+			"trim"
+		],
+		Case: [
+			"new",
+			"edit",
+			"get",
 			"getOne"
 		]
 	}

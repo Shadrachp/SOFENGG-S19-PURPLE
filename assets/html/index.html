@@ -8,7 +8,6 @@
 	<!-- Workspace section. Everything else goes here. -->
 	<div id=space hidden>
 		<div id=menu>
-			<div class=menu_design></div>
 			<img id=menu_clients
 				src=../img/clients.png
 				button=1
@@ -33,27 +32,30 @@
 					button="0"
 				>New Log</button><button id=ctrl_bill
 					button="0"
-					hidden
 				>Billing</button>
 				<img id=ctrl_pref src=../img/preferences.png draggable=false>
 			</div>
 		</div>
 
-		<!-- All work logs for the currently selected client. -->
-		<div id=log></div>
+		<div id=case_space invisible>
+			<button id=case_new button=0>New Case Matter</button>
+		</div>
 
 		<label id=space_empty>There's nothing here...<br><small>Start by creating a new client!</small><br><smaller>Click the glowing button from the left to start.</smaller></label>
 
-		<!-- The currently selected client's information. -->
-		<div id=info sidebar invisible>
-			<label id=info_name></label>
-			<div id=info_stats>
+		<div id=info invisible>
+			<div class=info_entry>
+				<label>Client</label>
+				<label id=info_name></label>
+			</div><div class=info_entry>
 				<label>Accumulated Time</label>
-				<label id=info_stats_time></label>
+				<label id=info_time></label>
+			</div><div class=info_entry>
 				<label>Total Logs</label>
-				<label id=info_stats_log></label>
+				<label id=info_log></label>
 			</div>
 		</div>
+		<div id=log></div>
 
 		<div id=sidebar toggle=1>
 			<!-- A list for all created clients. -->
@@ -103,6 +105,7 @@
 					src=../img/new.png
 					draggable=false
 					button="1"
+					hidden
 				>
 				<div id=code_space
 					class=sidebar_space
@@ -150,6 +153,79 @@
 		</div>
 	</div>
 
+	<div id=bill_popup popup invisible>
+		<dim></dim>
+		<div>
+			<div class=bill_popup_entry>
+				<label>Client</label>
+				<div id=bill_popup_client
+					type=text
+					input_text="0"
+					disabled>The big brown fox jumps over the lazy dog.</div>
+			</div><div class=bill_popup_entry>
+				<label>Date</label>
+				<div id=bill_popup_date
+					type=text
+					input_text="0"
+					disabled>12/04/2018 - 12/04/2018</div>
+			</div><br><div class=bill_popup_entry>
+				<label>Partner</label>
+				<input id=bill_popup_partner
+					type=text
+					input_text="0">
+			</div><div class=bill_popup_entry>
+				<label>Rate Per Hour</label>
+				<input id=bill_popup_rate
+					type=number
+					value=0
+					input_text="0">
+			</div><div class=bill_popup_entry>
+				<label>VAT Percent</label>
+				<input id=bill_popup_vat
+					type=number
+					value=12
+					input_text="0">
+			</div>
+			<div id=bill_popup_space>
+				<table id=bill_popup_table>
+					<tbody id=bill_popup_tbody></tbody>
+				</table>
+			</div>
+			<div class=bill_popup_entry>
+				<label>Total Fees</label>
+				<div id=bill_popup_totalfee
+					type=text
+					input_text="0"
+					disabled>99999</div>
+			</div><div class=bill_popup_entry>
+				<label>VAT</label>
+				<div id=bill_popup_vatfee
+					type=text
+					input_text="0"
+					disabled>600</div>
+			</div><div class=bill_popup_entry right>
+				<label>Grand Total</label>
+				<div id=bill_popup_grandtotalfee
+					type=text
+					input_text="0"
+					disabled>99999999</div>
+			</div><br>
+			<label id=bill_popup_warn>* Values may be different in the exported file due to decimal places.</label>
+			<button id=bill_popup_cancel button=0>Cancel</button>
+			<button id=bill_popup_submit button=0>Submit</button>
+		</div>
+	</div>
+
+	<div id=case_popup popup invisible>
+		<dim></dim>
+		<div>
+			<label>New Case Matter</label>
+			<input id=case_popup_input type=text placeholder=Name input_text=0>
+			<button id=case_popup_cancel button=0>Cancel</button>
+			<button id=case_popup_create button=0>Create</button>
+		</div>
+	</div>
+
 	<div id=client_popup popup invisible>
 		<dim></dim>
 		<div>
@@ -188,12 +264,9 @@
 		<div scroll="0">
 			<label class=pref_popup_label>Client Name</label>
 			<input id=pref_popup_name type=text input_text="0">
-			<label class=pref_popup_label hidden>Billing Button Visibility</label>
-			<checkbox id=pref_popup_hide checkbox="0" active=1 hidden></checkbox>
 			<img id=pref_popup_close src=../img/close_small.png draggable=false>
-			<!-- <sep></sep>
-			<button id=pref_popup_clear button="0">Clear This Client's Log</button>
-			<button id=pref_popup_danger button="0">Delete This Client</button> -->
+			<sep></sep>
+			<button id=pref_popup_danger button="0">Delete This Client</button>
 		</div>
 	</div>
 
@@ -232,7 +305,7 @@
 	<div id=preload>
 		<div>
 			<label id=preload_header>Hold on...</label>
-			<label id=preload_sub>Arranging the archives...</label>
+			<label id=preload_sub></label>
 		</div>
 	</div>
 

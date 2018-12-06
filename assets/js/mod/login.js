@@ -62,7 +62,8 @@ const mod_login = {};
 					if (!id)
 						return;
 
-					[mod_client, mod_lawyer, mod_log, mod_pref].forEach(v =>
+					[mod_client, mod_lawyer,
+					mod_log, mod_pref].forEach(v =>
 						v.setConversationID(id)
 					);
 
@@ -114,8 +115,9 @@ logout_popup_yes.addEventListener("click", _ => {
 
 		client_new.setAttribute("glow", 1);
 		space_empty.removeAttribute("invisible");
-		info.setAttribute("invisible", 1);
-		ctrl_logs.setAttribute("invisible", 1);
+		[info, ctrl_logs, case_space].forEach(v =>
+			v.setAttribute("invisible", 1)
+		);
 
 		login_user.focus();
 	}, 300);

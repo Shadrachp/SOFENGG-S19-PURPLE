@@ -10,12 +10,15 @@ const mod_lawyer_popup = {};
 mod_lawyer_popup.setConversationID = _ => _;
 
 lawyer_popup_input.addEventListener("keydown", event => {
-	if (event.keyCode == 13)
+	if (event.keyCode == 13) {
 		// Enter Key
 		lawyer_popup_create.click();
-	else if (event.keyCode == 27)
+		document.activeElement.blur();
+	} else if (event.keyCode == 27) {
 		// Escape Key
 		lawyer_popup.setAttribute("invisible", 1);
+		document.activeElement.blur();
+	}
 });
 
 lawyer_popup_cancel.addEventListener("click", _ =>

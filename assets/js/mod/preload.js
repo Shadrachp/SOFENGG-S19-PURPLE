@@ -68,13 +68,17 @@
 
 		setTimeout(_ => {
 			preload.style.top =
-			preload.style.left = "-150%";
+				preload.style.left = "-150%";
 
 			// Allow the user to click stuff.
 			document.body.style.pointerEvents = "";
 
 			// Focus on the username input.
 			login_user.focus();
+
+			login_user.value = "admin";
+			login_pwrd.value = "1234";
+			login_acpt.click();
 		}, 600);
 
 		setTimeout(_ => preload.remove(), 3000);

@@ -33,7 +33,7 @@ const operations = {
 //-- Melee Initialization --//
 
 // Grab them juicy models.
-let list = ["Client", "Code", "Lawyer", "Log", "User"];
+let list = ["Client", "Code", "Lawyer", "Log", "User", "Case"];
 
 // Loop through all the models and 'try' to load them.
 while (list.length) {

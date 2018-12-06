@@ -2,7 +2,7 @@
  * Library for the log interface.
  *
  * @author Llyme
- * @dependencies vergil.js, client.js
+ * @dependencies client.js
 **/
 const mod_log = {};
 
@@ -11,6 +11,9 @@ mod_log.setConversationID =
 	mod_log.new = _ => _;
 
 spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
+	let sort = {
+		_id: -1
+	};
 	let conversation_id;
 
 	mod_log.setConversationID = hash => {
@@ -19,11 +22,23 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		mod_log_popup.setConversationID(hash);
 	};
 
-	mod_log.new = (client_id, log_space) =>
+	mod_log.new = (case_id, log_space) => {
+		let mod = {};
+
+		mod.getNotBilled = _ =>
+			mod_relay.Log.get(case_id, 0, 0, {
+				billed: false
+			}, {
+				date: -1,
+				time_start: -1
+			});
+
 		mod_datastore.init(log_space, 128, 64, {
 			getter: (skip, limit) =>
-				mod_relay.Log.get(client_id, skip, limit),
+				mod_relay.Log.get(case_id, skip, limit, null, sort),
+
 			key: doc => doc._id,
+
 			new: (doc, index) => {
 				doc.date = new Date(doc.date);
 
@@ -47,19 +62,26 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 				// Date and time.
 
 				let time = doc.time_end - doc.time_start;
-				let l = {
-					log_space_time: mod_info.stats_time_convert(
+				[[
+					"log_space_time",
+					mod_info.stats_time_convert(
 						doc.time_end - doc.time_start
 					) || "<b style=color:var(--warning)>" +
-						"No Accumulated Time</b>",
-					log_space_date: doc.date.toLocaleDateString()
-				};
+						"NO ACCUMULATED TIME</b>"
+				], [
+					"log_space_date",
+					doc.date.toLocaleDateString()
+				], [
+					"log_space_code",
+					doc.codes.length ? doc.codes.map(doc =>
+						"<label>" + doc.code + "</label>"
+					).join("") : "<b>NO CODE</b>"
+				]].forEach(t => {
+					let v = q("!label class=" + t[0]);
+					v.innerHTML = t[1];
 
-				for (let i in l) {
-					let v = q("!label class=" + i);
-					v.innerHTML = l[i];
 					root.appendChild(v);
-				}
+				});
 
 
 				// Lawyer, codes, and description.
@@ -80,15 +102,6 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 							doc.lawyer.name :
 						"<label style=color:var(--warning)>No Lawyer" +
 							"</label>"
-					],
-					log_space_code: [
-						"label",
-						doc.codes ? "<label>Code</label>" +
-							doc.codes.map(doc =>
-								"<label>" + doc.code + "</label>"
-							).join("") :
-						"<label style=color:var(--warning)>" +
-							"No Code</label>"
 					]
 				};
 
@@ -107,11 +120,13 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 
 				return doc;
 			},
+
 			remove: doc => {
 				doc.root.remove();
 
 				return true;
 			},
+
 			move: (doc, index) => {
 				if (index == null)
 					log_space.appendChild(doc.btn);
@@ -121,8 +136,12 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 						log_space.childNodes[index]
 					);
 			},
-			sort: (a, b) => a > b
-		})({});
+
+			sort: (a, b) => a._id > b._id
+		})(mod);
+
+		return mod;
+	};
 }));
 
 spook.return();

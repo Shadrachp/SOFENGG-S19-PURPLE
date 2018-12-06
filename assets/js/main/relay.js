@@ -252,9 +252,7 @@ let filter = {
 
 	Log: {
 		new: (event, id, properties, channel) => {
-			console.log(properties);
-
-			properties.client = new ObjectId(properties.client);
+			properties.case = new ObjectId(properties.case);
 			properties.lawyer = new ObjectId(properties.lawyer);
 			properties.codes.forEach((v, i) =>
 				properties.codes[i] = new ObjectId(v)
@@ -270,7 +268,9 @@ let filter = {
 		},
 
 		edit: (event, id, _id, properties, channel) =>
-			spook.models.Log.findOne({_id: _id}).then(doc => {
+			spook.models.Log.findOne({
+				_id: new ObjectId(_id)
+			}).then(doc => {
 				if (doc) {
 					doc.set(properties);
 					doc.save((err, doc) => event.sender.send(
@@ -282,31 +282,19 @@ let filter = {
 					event.sender.send(channel, id, false);
 			}),
 
-		get: (event, id, client_id, skip, limit, channel) =>
+		get: (event,
+			  id,
+			  case_id,
+			  skip,
+			  limit,
+			  query,
+			  sort,
+			  channel) => {
+			query = query || {};
+			query.case = new ObjectId(case_id);
+
 			spook.models.Log.aggregate([{
-				$match: {
-					client: new ObjectId(client_id)
-				}
-			}, {
-				$lookup: {
-					from: "lawyers",
-					localField: "lawyer",
-					foreignField: "_id",
-					as: "lawyer"
-				}
-			}, {
-				$unwind: "$lawyer"
-			}, {
-				$unwind: "$codes"
-			}, {
-				$lookup: {
-					from: "codes",
-					localField: "codes",
-					foreignField: "_id",
-					as: "codes"
-				}
-			}, {
-				$unwind: "$codes"
+				$match: query
 			}, {
 				$project: {
 					_id: {
@@ -316,53 +304,77 @@ let filter = {
 					time_start: 1,
 					time_end: 1,
 					lawyer: {
-						_id: {
-							$toString: "$lawyer._id"
-						},
-						name: 1
+						$toString: "$lawyer"
 					},
-					codes: {
-						_id: {
-							$toString: "$codes._id"
-						},
-						code: 1,
-						description: 1
-					},
-					description: 1
+					codes: 1,
+					description: 1,
+					billed: 1
 				}
 			}, {
-				$group: {
-					_id: "$_id",
-					date: {
-						$first: "$date"
-					},
-					time_start: {
-						$first: "$time_start"
-					},
-					time_end: {
-						$first: "$time_end"
-					},
-					lawyer: {
-						$first: "$lawyer"
-					},
-					codes: {
-						$push: "$codes"
-					},
-					description: {
-						$first: "$description"
-					}
-				}
-			}, {
-				$sort: {
-					_id: -1
-				}
-			}, {
-				$skip: skip != null ? (skip < 0 ? 0 : skip) : 0
-			}, {
-				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
-			}]).then(docs =>
-				event.sender.send(channel, id, docs)
-			)
+				$sort: sort
+			}]).then(docs => {
+				if (!docs.length)
+					return event.sender.send(channel, id, []);
+
+				let n0 = docs.length;
+				let fn0 = _ => {
+					n0--;
+
+					if (n0)
+						return;
+
+					event.sender.send(channel, id, docs);
+				};
+
+				docs.forEach(doc => {
+					let n1 = 2;
+					let fn1 = _ => {
+						n1--;
+
+						if (n1)
+							return;
+
+						fn0();
+					};
+
+					spook.models.Lawyer.findOne({
+						_id: new ObjectId(doc.lawyer)
+					}).then(lawyer_doc => {
+						doc.lawyer = {
+							_id: lawyer_doc._id.toString(),
+							name: lawyer_doc.name
+						};
+
+						fn1();
+					});
+
+					if (doc.codes.length)
+						spook.models.Code.aggregate([{
+							$match: {
+								_id: {
+									$in: doc.codes.map(v =>
+										new ObjectId(v)
+									)
+								}
+							}
+						}, {
+							$project: {
+								_id : {
+									$toString: "$_id"
+								},
+								code: 1,
+								description: 1
+							}
+						}]).then(code_docs => {
+							doc.codes = code_docs;
+
+							fn1();
+						});
+					else
+						fn1();
+				});
+			});
+		}
 	},
 
 	Lawyer: {
@@ -486,9 +498,15 @@ let filter = {
 	},
 
 	Code: {
-		new: (event, id, properties, channel) =>
-			spook.models.Code.findOne({code: properties.code})
-			.then(doc => {
+		new: (event, id, properties, channel) => {
+			properties.code = properties.code.toUpperCase();
+
+			spook.models.Code.findOne({
+				code: new RegExp(
+					"^" + literalRegExp(properties.code) + "$",
+					"i"
+				)
+			}).then(doc => {
 				if (!doc)
 					spook.models.Code.new(properties, doc =>
 						event.sender.send(
@@ -499,10 +517,16 @@ let filter = {
 					);
 				else
 					event.sender.send(channel, id);
-			}),
+			});
+		},
 
 		edit: (event, id, code, properties, channel) =>
-			spook.models.Code.findOne({code}).then(doc => {
+			spook.models.Code.findOne({
+				code: new RegExp(
+					"^" + literalRegExp(code) + "$",
+					"i"
+				)
+			}).then(doc => {
 				if (doc) {
 					doc.set(properties);
 					doc.save((err, doc) => event.sender.send(
@@ -551,19 +575,12 @@ let filter = {
 			);
 		},
 
-		getOne: (event, id, key, channel) => {
-			key = new RegExp(
-				"^" +
-					literalRegExp(key) +
-					"$",
-				"i"
-			);
-
+		getOne: (event, id, code, channel) =>
 			spook.models.Code.findOne({
-				$or: [
-					{ code: key },
-					{ description: key }
-				]
+				code: new RegExp(
+					"^" + literalRegExp(code) + "$",
+					"i"
+				)
 			}).then(doc =>
 				event.sender.send(
 					channel,
@@ -574,7 +591,146 @@ let filter = {
 						description: doc.description
 					}
 				)
-			);
+			),
+
+		trim: (event, id, codes, channel) => {
+			let query = {
+				code: {
+					$nin: codes.map(v => new RegExp(
+						"^" + literalRegExp(v) + "$",
+						"i"
+					))
+				}
+			};
+
+			spook.models.Code.find(query).then(docs => {
+				let fn0 = _ =>
+					spook.models.Code
+					.deleteMany(query)
+					.exec()
+					.then(res =>
+						event.sender.send(
+							channel,
+							id,
+							res.ok && res.n > 0
+						)
+					);
+
+				if (!docs.length)
+					fn0();
+
+				codes = docs.map(doc => doc._id);
+
+				spook.models.Log.find({
+					codes: {
+						$all: codes
+					}
+				}).then(docs => {
+					if (!docs.length)
+						fn0();
+
+					let n = docs.length;
+					let fn1 = _ => {
+						n--;
+
+						if (n)
+							return;
+
+						fn0();
+					};
+
+					docs.forEach(doc => {
+						codes.forEach(v => {
+							let i = doc.codes.indexOf(v);
+
+							if (i != -1)
+								doc.codes.splice(i, 1);
+						});
+
+						doc.save(fn1);
+					});
+				});
+			});
+		}
+	},
+
+	Case: {
+		new: (event, id, properties, channel) => {
+			properties.client = new ObjectId(properties.client);
+
+			spook.models.Case.findOne({
+				client: properties.client,
+				name: new RegExp(
+					"^" + literalRegExp(properties.name) + "$",
+					"i"
+				)
+			}).then(doc => {
+				if (!doc) {
+					spook.models.Case.new(properties, doc =>
+						event.sender.send(
+							channel,
+							id,
+							doc && doc._id.toString()
+						)
+					);
+				} else
+					event.sender.send(channel, id);
+			});
+		},
+
+		edit: (event, id, _id, properties, channel) =>
+			spook.models.Case.findOne({
+				_id: new ObjectId(_id)
+			}).then(doc => {
+				if (doc) {
+					doc.set(properties);
+					doc.save((err, doc) => event.sender.send(
+						channel,
+						id,
+						err ? false : true
+					));
+				} else
+					event.sender.send(channel, id, false);
+			}),
+
+		get: (event, id, client_id, skip, limit, filter, channel) => {
+			let pipeline = [{
+				$match: {
+					client: new ObjectId(client_id)
+				}
+			}, {
+				$addFields: {
+					sort: {$toUpper: "$name"}
+				}
+			}, {
+				$sort: {
+					sort: 1
+				}
+			}, {
+				$project: {
+					_id: {
+						$toString: "$_id"
+					},
+					client: {
+						$toString: "$client"
+					},
+					name: 1,
+					time: 1,
+					logs_count: 1
+				}
+			}, {
+				$skip: skip != null ? (skip < 0 ? 0 : skip) : 0
+			}, {
+				$limit: limit ? (limit <= 0 ? 1 : limit) : 1
+			}];
+
+			if (filter)
+				pipeline[0].$match.name =
+					new RegExp(literalRegExp(filter), "i");
+
+			spook.models.Case.aggregate(pipeline).then(docs =>
+				event.sender.send(channel, id, docs)
+			)
 		}
 	}
 };

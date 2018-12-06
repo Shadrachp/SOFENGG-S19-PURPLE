@@ -40,6 +40,9 @@ mod_pref.setConversationID = _ => _;
 
 		pref_popup_name.value = pref_popup_name.value.trim();
 
+		if (pref_popup_name.value == target.name)
+			return;
+
 		if (!pref_popup_name.value) return fn(
 			"<label style=color:var(--warning)>" +
 			"Please input something." +
@@ -49,31 +52,27 @@ mod_pref.setConversationID = _ => _;
 		if (pref_popup_name.value.length < 2 ||
 			pref_popup_name.value.length > 64) return fn(
 			"<div style=color:var(--warning)>" +
-			"Client's name must have at least <b>2 characters</b> " +
+			"Name must have at least <b>2 characters</b> " +
 			"and up to <b>64 characters</b> at most." +
 			"</div>"
 		);
 
 		mod_loading.show();
 
-		mod_relay.Client.edit(
-			conversation_id,
+		mod_client.edit(
 			target.key,
-			{
-				name: pref_popup_name.value
-			}
+			{name: pref_popup_name.value}
 		)(flag => {
 			mod_loading.hide();
 
 			if (flag) {
 				let key = pref_popup_name.value.toUpperCase();
-
-				// Migrate data to new name.
-
-				mod_client.move(target.key, key);
+				let key_old = target.key;
 
 				target.key = key;
 				target.name = pref_popup_name.value;
+
+				mod_client.move(key_old, key);
 
 				if (target.hasOwnProperty("btn"))
 					target.btn.innerHTML =

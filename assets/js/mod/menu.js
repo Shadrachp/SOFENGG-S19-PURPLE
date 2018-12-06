@@ -14,30 +14,16 @@
 	let selected = list[0];
 
 	list.map(v => v[0].addEventListener("click", _ => {
-		if (selected) {
-			selected[0].removeAttribute("selected");
-			selected[1].setAttribute("invisible", 1);
+		if (selected == v)
+			return;
 
-			if (selected == v) {
-				selected = null;
+		selected[0].removeAttribute("selected");
+		selected[1].setAttribute("invisible", 1);
 
-				sidebar.removeAttribute("toggle");
-				info.removeAttribute("sidebar");
-			} else {
-				selected = v;
+		selected = v;
 
-				v[0].setAttribute("selected", 1);
-				v[1].removeAttribute("invisible");
-			}
-		} else {
-			sidebar.setAttribute("toggle", 1);
-			info.setAttribute("sidebar", 1);
-
-			selected = v;
-
-			v[0].setAttribute("selected", 1);
-			v[1].removeAttribute("invisible");
-		}
+		v[0].setAttribute("selected", 1);
+		v[1].removeAttribute("invisible");
 	}));
 }
 

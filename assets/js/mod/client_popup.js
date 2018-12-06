@@ -9,12 +9,15 @@ const mod_client_popup = {};
 mod_client_popup.setConversationID = _ => _;
 
 client_popup_input.addEventListener("keydown", event => {
-	if (event.keyCode == 13)
+	if (event.keyCode == 13) {
 		// Enter Key
 		client_popup_create.click();
-	else if (event.keyCode == 27)
+		document.activeElement.blur();
+	} else if (event.keyCode == 27) {
 		// Escape Key
 		client_popup.setAttribute("invisible", 1);
+		document.activeElement.blur();
+	}
 });
 
 client_popup_cancel.addEventListener("click", _ =>
@@ -67,12 +70,13 @@ client_popup_cancel.addEventListener("click", _ =>
 			mod_loading.hide();
 
 			if (_id) {
-				let doc = mod_client.new({name: client_popup_input.value});
+				let doc = mod_client.new({
+					_id,
+					name: client_popup_input.value
+				});
 
 				if (!doc)
 					return;
-
-				doc._id = _id;
 
 				client_search.value = "";
 

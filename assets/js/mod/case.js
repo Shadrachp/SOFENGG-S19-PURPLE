@@ -4,13 +4,31 @@
  * @author Llyme
  * @dependencies qTiny.js, info.js, relay.js, tipper.js, sidebar.js
 **/
-const mod_case = {};
+const mod_case = {
+	pref_btn: "<img class=sidebar_pref_case "+
+		"src=../img/sidebar_pref.png " +
+		"draggable=false>"
+};
 
 mod_case.get = mod_case.new = _ => _;
 
 spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 	mod_case.new = (client_id, case_space) => {
 		let cases = {selected: null};
+
+		// case delete
+		mod_case.delete = (client_id, name) => 
+		mod_relay.Case.delete(
+			client_id,
+			name
+		);
+		
+		mod_case.edit = (client_id, name, properties) => 
+		mod_relay.Case.edit(
+			client_id,
+			name,
+			properties
+		);
 
 		mod_datastore.init(case_space, 128, 64, {
 			getter: (skip, limit) =>
@@ -46,7 +64,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 				}
 
 				let btn = doc.btn = q("!label");
-				btn.innerHTML = doc.name;
+				btn.innerHTML = doc.name + mod_case.pref_btn;
 
 				if (cases.selected == doc)
 					btn.setAttribute("selected", 1);
@@ -60,12 +78,17 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 					);
 
 				btn.addEventListener("click", event => {
+					if (event.target != btn) {
+						mod_pref_lawyer.show(mod_lawyer.selected);
+						mod_pref.show(mod_client.selected);
+						return mod_pref_case.show(doc);					 
+					}
+
 					let prev = cases.selected;
 
 					if (prev) {
 						if (prev.hasOwnProperty("btn")) {
-							prev.log_space
-								.setAttribute("invisible", 1);
+							prev.log_space.setAttribute("invisible", 1);
 							prev.btn.removeAttribute("selected", 1);
 						} else
 							prev.log_space.remove();

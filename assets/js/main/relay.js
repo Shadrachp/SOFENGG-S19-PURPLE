@@ -643,8 +643,11 @@ let filter = {
 			)
 		},
 
-		edit: (event, id, _id, properties, channel) =>
-			spook.models.Case.findOne({_id}).then(doc => {
+		edit: (event, id, client, name, properties, channel) =>
+			spook.models.Case.findOne({
+				client: client,
+				name: new RegExp(literalRegExp(name), "i")
+			}).then(doc => {
 				if (doc) {
 					doc.set(properties);
 					doc.save((err, doc) => event.sender.send(
@@ -694,7 +697,31 @@ let filter = {
 			spook.models.Case.aggregate(pipeline).then(docs =>
 				event.sender.send(channel, id, docs)
 			)
-		}
+		},
+
+		delete: (event, id, client, name, channel) =>{
+            // if (conversation.hash != hash)
+			// 	return event.sender.send(channel, id);
+			
+			spook.models.Case.findOne({
+				client: client,
+				name: new RegExp(literalRegExp(name), "i")
+			}).then(doc => {
+				if (doc) {	
+					doc.remove();
+					doc.save((err, doc) =>
+						event.sender.send(
+							channel,
+							id,
+							err ? false : true
+						)
+					);
+				}
+				else
+					event.sender.send(channel, id, false);
+			});	
+			
+        }
 	}
 };
 

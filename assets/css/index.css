@@ -1028,6 +1028,30 @@ img#ctrl_logout {
 	pointer-events: none;
 }
 
+.case_space > label[selected] > .sidebar_pref_case {
+	display: block;
+	pointer-events: all;
+}
+
+.sidebar_pref_case {
+	position: absolute;
+	display: none;
+	right: 10px;
+	margin-top: -20px;
+	float: right;
+	transition: all 0.2s;
+}
+
+.sidebar_pref_case:hover {
+	transform: rotateZ(45deg);
+	filter: brightness(80%);
+}
+
+.sidebar_pref_case:active {
+	filter: brightness(60%);
+	transition: all 0.1s;
+}
+
 
 
 
@@ -1392,7 +1416,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	overflow-y: auto;
 }
 
-.pref_popup_label {
+#pref_popup > div > label {
 	display: block;
 	margin: 8px;
 	margin-bottom: 0;
@@ -1444,15 +1468,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	margin-left: 8px;
 }
 
-#pref_popup_danger {
-	display: block;
-	margin: 0 32px;
-	width: calc(100% - 64px);
-	background-color: var(--danger);
-	color: #fff;
-}
-
-#pref_popup_delete_lawyer {
+#pref_popup > div > button {
 	display: block;
 	margin: 0 32px;
 	width: calc(100% - 64px);
@@ -1460,6 +1476,15 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	color: #fff;
 	margin-top: 24px;
 }
+
+/* #pref_popup_delete_lawyer {
+	display: block;
+	margin: 0 32px;
+	width: calc(100% - 64px);
+	background-color: var(--danger);
+	color: #fff;
+	margin-top: 24px;
+} */
 
 
 

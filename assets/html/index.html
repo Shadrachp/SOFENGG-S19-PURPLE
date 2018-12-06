@@ -201,10 +201,29 @@
 			<input id=pref_popup_name type=text input_text="0">
 			<label class=pref_popup_label_lawyer>Edit Lawyer Name</label>
 			<input id=pref_popup_name_lawyer type=text input_text="0">
+			<label class=pref_popup_case_label>Edit Case Matter Name</label>
+			<input id=pref_popup_case_name type=text input_text="0">
 			<img id=pref_popup_close src=../img/close_small.png draggable=false>
 			<sep></sep>
 			<button id=pref_popup_danger button="0">Delete This Client</button>
 			<button id=pref_popup_delete_lawyer button="0">Delete This Lawyer</button>
+			<button id=pref_popup_delete_case button="0">Delete This Case Matter</button>
+		</div>
+	</div>
+
+	<!-- Suggested popup to prevent accidental deleting
+		 to implement later.-->
+	<div id="delete_popup" popup="" invisible="1">
+		<dim></dim>
+		<div scroll="0">
+			<label class="warning_label">This would be permanently deleted!
+			</label>
+			<label class="warning_label">Are you sure you want to delete?
+			</label>
+			<img id="delete_popup_close" src="../img/close_small.png" draggable="false">
+			<button id="delete_popup_cancel" button="0">Cancel</button>
+			<button id="delete_popup_confirm" button="0">Delete</button>
+			
 		</div>
 	</div>
 

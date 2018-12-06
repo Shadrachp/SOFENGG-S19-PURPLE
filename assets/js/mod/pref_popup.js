@@ -6,6 +6,7 @@
 **/
 const mod_pref = {};
 const mod_pref_lawyer = {};
+const mod_pref_case = {};
 
 mod_pref.setConversationID = _ => _;
 mod_pref_lawyer.setConversationID = _ => _;
@@ -282,6 +283,173 @@ mod_pref_lawyer.setConversationID = _ => _;
 
 pref_popup_close.addEventListener("click", _ => {
 	pref_popup.setAttribute("invisible", 1);
+});
+
+let target_case;
+
+mod_pref_case.show = doc => {
+	target_case = doc;
+	spaces = case_space.getElementsByClassName("case_space");
+	client_cases = null;
+	for(i=0;i<spaces.length;i++) {
+		if (spaces[i].getAttribute("invisible") != 1) {
+			client_cases = spaces[i];
+			break;
+		}
+	}
+	let selected_case = null;
+	labels = client_cases.getElementsByTagName("label");
+	for(i=0;i<labels.length;i++) {
+		if (labels[i].getAttribute("selected") == 1) {
+			selected_case = labels[i];
+			break;
+		}
+	}
+	target_case = selected_case;
+	pref_popup_case_name.value = selected_case.innerText;
+	// console.log("client_id: " +mod_client.selected._id);
+	// console.log("target_case.name: " +target_case.name);
+	pref_popup.removeAttribute("invisible");
+}
+
+	// Delete case in speciic client
+pref_popup_delete_case.addEventListener("click", _ => {
+	// console.log("Deleting from DB, name: " +target_case.name);
+	mod_loading.show();
+	mod_relay.Case.delete(
+		mod_client.selected._id,
+		pref_popup_case_name.value
+	)(flag => {
+		mod_loading.hide();
+
+		if (flag) {
+			// delete the log_space and case-matter label from the interface
+			let current_log_space = null;
+			let all_log_spaces = log.getElementsByClassName("log_space");
+			for(i=0;i<all_log_spaces.length;i++) {
+				if (all_log_spaces[i].getAttribute("invisible") != 1) {
+					current_log_space = all_log_spaces[i];
+					break;
+				}
+			}
+			if (current_log_space!=null)
+				current_log_space.remove();
+
+			let caseSpaces = null;
+			caseSpaces = case_space.getElementsByClassName("case_space");
+			for(i=0;i<caseSpaces.length;i++) {
+				if (caseSpaces[i].getAttribute("invisible") != 1) {
+					currentSpace = caseSpaces[i];
+					break;
+				}
+			}
+			spaceLabels = currentSpace.getElementsByTagName("label");
+			for(i=0;i<spaceLabels.length;i++) {
+				if (spaceLabels[i].getAttribute("selected") == 1) {
+					selectedCase = spaceLabels[i];
+					break;
+				}
+			}
+			// console.log("Delete from UI, name: "+selectedCase.innerText);
+			selectedCase.remove();	
+
+			// selects first lo in interface if any
+			caseSpaces = case_space.getElementsByClassName("case_space");
+			for(i=0;i<caseSpaces.length;i++) {
+				if (caseSpaces[i].getAttribute("invisible") != 1) {
+					currentSpace = caseSpaces[i];
+					break;
+				}
+			}
+			spaceLabels = currentSpace.getElementsByTagName("label");
+			if (spaceLabels.length > 0)
+				spaceLabels[0].click();
+
+			pref_popup_case_name = "";
+			pref_popup.setAttribute("invisible", 1);
+
+			vergil(
+				"<label style=color:var(--success)>" +
+				"Case matter successfully deleted!" +
+				"</label>"
+			);
+		} else {
+			vergil(
+				"<label style=color:var(--warning)>" +
+				"Error! Unable to delete case." +
+				"</label>"
+			);
+		}
+
+	});
+});
+
+pref_popup_case_name.addEventListener("change", _ => {
+	let fn = txt => {
+		pref_popup_case_name.value = target_case.innerText;
+
+		vergil(txt);
+	};
+
+	pref_popup_case_name.value = pref_popup_case_name.value.trim();
+
+	if (!pref_popup_case_name.value) return fn(
+		"<label style=color:var(--warning)>" +
+		"Please input something for the case matter." +
+		"</label>"
+	);
+
+	if (pref_popup_case_name.value.length < 2 ||
+		pref_popup_case_name.value.length > 64) return fn(
+		"<div style=color:var(--warning)>" +
+		"Case matter's name must have at least <b>2 characters</b> " +
+		"and up to <b>64 characters</b> at most." +
+		"</div>"
+	);
+
+	mod_loading.show();
+
+	mod_relay.Case.edit(
+		mod_client.selected._id,
+		target_case.innerText,
+		{name:pref_popup_case_name.value}
+	)(flag => {
+		mod_loading.hide();
+
+		if (flag) {
+			// let key = pref_popup_case_name.value.toUpperCase();
+
+			// mod_case.move(target_case.innerText, key);
+
+			// target_case.innerText = key;
+			// target_case.innerText = pref_popup_case_name.value;
+
+			// if (target_case.hasOwnProperty("btn"))
+			// target_case.innerHTML =
+			// 	pref_popup_case_name.value +
+			// 	mod_case.pref_btn;
+
+			vergil(
+				"<label style=color:var(--success)>" +
+				"Case matter's name successfully changed!" +
+				"</label>"
+			);
+		} else fn(
+			"<label style=color:var(--warning)>" +
+			"Case Matter: That name is already in use!" +
+			"</label>"
+		);
+	});
+
+});
+
+delete_popup_cancel.addEventListener("click", _ => {
+	delete_popup_close.click();
+});
+
+delete_popup_close.addEventListener("click", _ => {
+	delete_popup.setAttribute("invisible", 1);
+	target_case = null;
 });
 
 spook.return();

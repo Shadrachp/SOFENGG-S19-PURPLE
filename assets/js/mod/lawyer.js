@@ -84,6 +84,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			btn.addEventListener("click", event => {
 
 				if (event.target != btn) {
+					mod_pref_case.show(mod_case.selected);
 					mod_pref.show(mod_client.selected);
 					return mod_pref_lawyer.show(doc);					 
 				}

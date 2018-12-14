@@ -35,9 +35,11 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 	let skip = 0;
 
 	{
+		let def = _ => _;
 		let defaults = {
-			sort: (a, b) => a < b,
-			flush: _ => _
+			sort: (a, b) => callbacks.key(a) < callbacks.key(b),
+			flush: def,
+			move: def
 		};
 
 		for (let k in defaults)
@@ -77,29 +79,15 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 	getter_counter.count = 0; // Total on-going requests.
 	getter_counter.dump = []; // List of previous IDs.
 
-	/**
-	 * Add to dump list (dump list is literally just for 'dumping' all the
-	 * keys in a list to sort them easily).
-	 *
-	 * @param {String} key - the key that will be used as an identifier for
-	 * data storage. This is also used for sorting (ascending order; A-Z).
-	 *
-	 * @param {Boolean|null} sort - Find a suitable index if `true` or
-	 * `null`, otherwise it will be added at the bottom of the list if
-	 * `false`.
-	 *
-	 * @return {Integer|null} - the position that should be placed into if
-	 * you want an ordered list, otherwise `null` if it should be placed
-	 * at the bottom.
-	**/
-	let dump_add = (key, sort) => {
+	let dump_add = (doc, sort) => {
+		let key = callbacks.key(doc);
 		let i;
 
 		// Try to sort the list if needed.
 		if ((sort == null || sort) && dump.length) {
 			for (i = 0;
 				i < dump.length &&
-				callbacks.sort(dump[i], key);
+				callbacks.sort(list[dump[i]], doc);
 				i++);
 
 			if (i < dump.length) {
@@ -134,7 +122,9 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 			skip -= docs.length;
 
 			if (dump.length + docs.length > limit)
-				dump.splice(limit - dump.length - docs.length).map(key => {
+				dump.splice(
+					limit - dump.length - docs.length
+				).map(key => {
 					if (callbacks.remove(list[key]))
 						delete list[key];
 				});
@@ -145,7 +135,7 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 				if (list[key])
 					return;
 
-				list[key] = callbacks.new(doc, dump_add(key));
+				list[key] = callbacks.new(doc, dump_add(doc));
 			});
 
 			busy = false;	
@@ -180,7 +170,7 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 				if (list[key])
 					return;
 
-				list[key] = callbacks.new(doc, dump_add(key));
+				list[key] = callbacks.new(doc, dump_add(doc));
 			});
 
 			busy = false;
@@ -215,7 +205,7 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 	return mod => {
 		mod.new = (doc, sort) => {
 			let key = callbacks.key(doc);
-			let data = callbacks.new(doc, dump_add(key));
+			let data = callbacks.new(doc, dump_add(doc));
 
 			if (data)
 				list[key] = data;
@@ -238,20 +228,21 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 
 			delete list[key_old];
 
-			callbacks.move(list[key_new], dump_add(key_new));
+			callbacks.move(list[key_new], dump_add(list[key_new]));
 		};
 
 		mod.flush = _ => {
 			getter_counter.dump.push(workID);
 			workID = viscount();
 
-			dump.forEach(key => callbacks.remove(list[key]));
+			dump.forEach(key => {
+				callbacks.flush(key);
+				callbacks.remove(list[key]);
+			});
 
 			dump = [];
 			list = {};
 			skip = 0;
-
-			callbacks.flush();
 		};
 
 		mod.get = key => list.hasOwnProperty(key) ? list[key] : null;
@@ -269,7 +260,7 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 					docs.map(doc => {
 						let key = callbacks.key(doc);
 
-						dump_add(key, false);
+						dump_add(doc, false);
 
 						list[key] = callbacks.new(doc);
 					});

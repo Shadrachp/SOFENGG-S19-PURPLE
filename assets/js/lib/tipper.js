@@ -26,7 +26,6 @@
 	z-index: 999;
 	pointer-events: none;
 }
-
 	`;
 	document.head.appendChild(v);
 }
@@ -35,7 +34,7 @@
  * Show a non-functional element to inform a user when the element
  * is hovered with the mouse.
  * @param {HTMLElement} elm - The element that triggers the message.
- * @param {String} value - The message.
+ * @param {String|Function} value - The message.
  * @param {Function({HTMLElement} elm)} cond - The condition fired
  * when hovering. The function must return a value that doesn't
  * equate to 'false' (zero, empty string, etc). `elm` is passed
@@ -47,7 +46,8 @@ const tipper = (elm, value, cond, flag) => {
 	elm.addEventListener("mouseenter", event => {
 		if (!cond || cond(elm)) {
 			tipper.target = elm;
-			tipper.div.innerHTML = value;
+			tipper.div.innerHTML = typeof(value) == "function" ?
+				value() : value;
 
 			document.body.appendChild(tipper.div);
 			tipper.move(event);

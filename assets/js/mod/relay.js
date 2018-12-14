@@ -124,14 +124,12 @@ const mod_relay = {
 			**/
 			"get",
 			"getOne",
-            "delete"
+			"delete"
 		],
 		Log: [
 			"new",
 			"edit",
-			"get",
-            "delete",
-            "deleteAll"
+			"get"
 		],
 		Lawyer: [
 			/**
@@ -177,7 +175,8 @@ const mod_relay = {
 			 * specifically requested. `null` if nothing was found.
 			**/
 			"get",
-			"getOne"
+			"getOne",
+			"delete"
 		],
 		Code: [
 			/**
@@ -222,17 +221,16 @@ const mod_relay = {
 			 * specifically requested. `null` if nothing was found.
 			**/
 			"get",
-			"getOne"
+			"getOne",
+			"trim"
 		],
-        Case: [
-            "new",
-            "edit",
-            "get",
-            "getOne",
-			"delete",
-			"deleteAll"
-        ]
-	};
+		Case: [
+			"new",
+			"edit",
+			"get",
+			"getOne"
+		]
+	}
 
 
 	spook.waitForChildren(_ => {

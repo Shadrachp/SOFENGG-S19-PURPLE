@@ -61,7 +61,11 @@ const database = {
 
 // Start the server asynchronously.
 setTimeout(_ => {
-	const pipe = spawn(mongod, ["--dbpath", "mongodbdata"]);
+	const pipe = spawn(mongod, [
+		"--bind_ip", "127.0.0.1",
+		"--port", "27017",
+		"--dbpath", "mongodbdata"
+	]);
 
 	pipe.stdout.on("data", v => console.log(v.toString("utf8")));
 	pipe.stderr.on("data", v => console.log(v.toString("utf8")));

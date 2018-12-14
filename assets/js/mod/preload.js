@@ -68,7 +68,7 @@
 
 		setTimeout(_ => {
 			preload.style.top =
-			preload.style.left = "-150%";
+				preload.style.left = "-150%";
 
 			// Allow the user to click stuff.
 			document.body.style.pointerEvents = "";

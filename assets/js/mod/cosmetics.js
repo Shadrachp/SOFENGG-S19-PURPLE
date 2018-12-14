@@ -4,6 +4,22 @@
  * @author Llyme
  * @dependencies qTiny.js
 **/
+const mod_cosmetics = {};
+
+mod_cosmetics.checkbox = elm => {
+	if (elm.childNodes.length)
+		return elm;
+
+	elm.appendChild(q("!div style=pointer-events:none"));
+
+	elm.addEventListener("click", event => (
+		event.target.getAttribute("active") != null ?
+		event.target.removeAttribute("active") :
+		event.target.setAttribute("active", 1)
+	));
+
+	return elm;
+};
 
 /* HTML is buggy and will sometimes let you focus on disabled elements.
    Of course, we prevent this.
@@ -20,17 +36,10 @@ document.body.addEventListener("focusin", event => {
 spook.waitForChildren(_ => {
 	//-- Checkboxes --//
 
-	let l = q("checkbox");
+	let l = document.querySelectorAll("[checkbox]");
 
-	for (let i = 0; i < l.length; i++) {
-		l[i].appendChild(q("!div style=pointer-events:none"));
-
-		l[i].addEventListener("click", event => (
-			event.target.getAttribute("active") ?
-			event.target.removeAttribute("active") :
-			event.target.setAttribute("active", 1)
-		));
-	}
+	for (let i = 0; i < l.length; i++)
+		mod_cosmetics.checkbox(l[i]);
 
 
 

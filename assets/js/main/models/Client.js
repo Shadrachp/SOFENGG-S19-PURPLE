@@ -15,21 +15,5 @@ module.exports = models => { return {
 		unique: true,
 		minlength: 2,
 		maxlength: 64
-	},
-	time: {
-		type: Number,
-		default: 0,
-		validate: {
-			validator: Number.isInteger,
-			message: "{VALUE} is not an integer."
-		}
-	},
-	logs_count: {
-		type: Number,
-		default: 0,
-		validate: {
-			validator: Number.isInteger,
-			message: "{VALUE} is not an integer."
-		}
 	}
 }};

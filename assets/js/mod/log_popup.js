@@ -12,94 +12,79 @@ const mod_log_popup = {
 	}
 };
 
-mod_log_popup.setConversationID = _ => _;
+// User clicked the log creation interface's submit button.
+log_popup_ctrl_submit.addEventListener("click", _ => {
+	let data = {
+		date: new Date(
+			log_popup_date.value ||
+			log_popup_date.placeholder
+		),
+		time_start: lemon.time.toMilitary_split(
+			log_popup_start.value ||
+			log_popup_start.placeholder
+		).reduce((a, b, i) => a + b * (!i ? 60 : 1), 0),
+		time_end: lemon.time.toMilitary_split(
+			log_popup_end.value ||
+			log_popup_end.placeholder
+		).reduce((a, b, i) => a + b * (!i ? 60 : 1), 0)
+	};
+	let txt = "";
+	let n = 2;
+	let fna = _ => {
+		n--;
 
-{
-	let conversation_id;
-
-	mod_log_popup.setConversationID = hash => conversation_id = hash;
-
-	/** A proxy that feeds input through all constraints for creating a
-	 * new log. Use this instead of 'mod_log.space_new'.
-	**/
-	mod_log_popup.new = _ => {
-		// Make sure there's actually a selected client to save to.
-		if (!mod_client.selected)
+		if (n)
 			return;
 
-		log_popup_date.setAttribute(
-			"placeholder",
-			new Date().toLocaleDateString()
-		);
+		mod_loading.hide();
 
+		if (data.time_start == data.time_end)
+			return vergil(
+				"<div " +
+				"style=color:var(--warning)>" +
+				"You can't create a log with the " +
+				"<b>starting time</b> the same as the " +
+				"<b>ending time</b>!</div>",
+				2600
+			);
 
-		// Extract and convert code into array.
-		let code = [];
-		let l = log_popup_code.getElementsByTagName("label");
+		if (txt.length)
+			return vergil(
+				"<div " +
+				"style=color:var(--warning);text-align:left;>" +
+				"Please fill up the entire form.<small>" + txt +
+				"</small></div>",
+				2600
+			);
 
-		for (let i = 0; i < l.length; i++)
-			if (!l[i].getAttribute("contenteditable") &&
-				l[i].innerText.search(/\S/) > -1)
-				code.push(l[i].innerText);
+		mod_loading.show();
 
+		let fn = docs => {
+			for (let i in docs) {
+				let doc = docs[i];
 
-		// Create log.
-		mod_log.space_new(
-			mod_client.selected,
-			log_popup_date.value ||
-				log_popup_date.getAttribute("placeholder"),
-			code.length ? code : null,
-			log_popup_start.value ||
-				log_popup_start.getAttribute("placeholder"),
-			log_popup_end.value ||
-				log_popup_end.getAttribute("placeholder"),
-			log_popup_lawyer.value,
-			log_popup_desc.innerText
-		);
-	};
+				if (data.date.toJSON() === doc.date &&
+					lemon.intersectRange(
+						data.time_start, data.time_end,
+						doc.time_start, doc.time_end
+					) >= 0) {
+					mod_loading.hide();
 
-	// User clicked the log creation interface's submit button.
-	log_popup_ctrl_submit.addEventListener("click", _ => {
-		let data = {
-			date: new Date(
-				log_popup_date.value ||
-				log_popup_date.placeholder
-			),
-			time_start: lemon.time.toMilitary_split(
-				log_popup_start.value ||
-				log_popup_start.placeholder
-			).reduce((a, b, i) => a + b * (!i ? 60 : 1), 0),
-			time_end: lemon.time.toMilitary_split(
-				log_popup_end.value ||
-				log_popup_end.placeholder
-			).reduce((a, b, i) => a + b * (!i ? 60 : 1), 0)
-		};
-		let txt = "";
-		let n = 2;
-		let fna = _ => {
-			n--;
-
-			if (n)
-				return;
-
-			mod_loading.hide();
-
-			if (txt.length)
-				return vergil(
-					"<div " +
-					"style=color:var(--warning);text-align:left;>" +
-					"Please fill up the entire form.<small>" + txt +
-					"</small></div>",
-					2600
-				);
-
-			mod_loading.show();
+					return vergil(
+						"<div style=color:var(--warning)>" +
+						"An existing log's date and time " +
+						"overlaps with this log!</div>",
+						2600
+					);
+				}
+			}
 
 			let client = mod_client.selected;
+			let case_space = client.cases.selected;
 
 			mod_relay.Log.new({
-				client: client._id,
-				date: data.date,
+				case: case_space._id,
+				date: data.date.toJSON(),
 				time_start: data.time_start,
 				time_end: data.time_end,
 				lawyer: data.lawyer._id,
@@ -116,22 +101,23 @@ mod_log_popup.setConversationID = _ => _;
 						1800
 					);
 
+				document.activeElement.blur();
 				log_popup.setAttribute("invisible", 1);
 
 				data._id = _id;
 
-				client.time += data.time_end - data.time_start;
-				client.logs_count++;
+				case_space.time += data.time_end - data.time_start;
+				case_space.logs_count++;
 
-				mod_client.edit(client.name, {
-					time: client.time,
-					logs_count: client.logs_count
+				mod_relay.Case.edit(case_space._id, {
+					time: case_space.time,
+					logs_count: case_space.logs_count
 				})(_ => _);
 
-				client.logs.new(data, true);
+				case_space.logs.new(data, true);
 
-				mod_info.stats_time_update(client.time);
-				mod_info.stats_log_update(client.logs_count);
+				mod_info.stats_time_update(case_space.time);
+				mod_info.stats_log_update(case_space.logs_count);
 
 				vergil(
 					"<div style=color:var(--success);>" +
@@ -141,77 +127,88 @@ mod_log_popup.setConversationID = _ => _;
 				);
 			});
 		};
-		let fnb = k => {
-			if (k)
-				txt = mod_log_popup.notif_empty[k] + txt;
 
-			fna();
+		mod_client.selected
+			.cases.selected.logs.getNotBilled()(fn);
+	};
+	let fnb = k => {
+		if (k)
+			txt = mod_log_popup.notif_empty[k] + txt;
+
+		fna();
+	};
+
+	mod_loading.show();
+
+	// Verify description.
+
+	if (log_popup_desc.innerText.search(/\S/) > -1)
+		data.description = log_popup_desc.innerText;
+	else
+		txt = mod_log_popup.notif_empty.description;
+
+
+	// Verify lawyer.
+
+	if (log_popup_lawyer.value)
+		mod_relay.Lawyer.getOne(
+			mod_login.getUserId(),
+			log_popup_lawyer.value
+		)(doc => {
+			if (doc)
+				data.lawyer = {
+					_id: doc._id,
+					name: doc.name
+				};
+
+			fnb(!doc ? "lawyer" : null);
+		});
+	else
+		fnb("lawyer");
+
+
+	// Verify codes.
+
+	let list = log_popup_code.getElementsByTagName("label");
+	if (list.length > 1) {
+		let codes = [];
+		let count = list.length - 1;
+		let fn = _ => {
+			count--;
+
+			if (count)
+				return;
+
+			data.codes = codes;
+
+			fnb(codes.length < list.length - 1 ? "code" : null);
 		};
 
-		mod_loading.show();
-
-		// Verify description.
-
-		if (log_popup_desc.innerText.search(/\S/) > -1)
-			data.description = log_popup_desc.innerText;
-		else
-			txt = mod_log_popup.notif_empty.description;
-
-
-		// Verify lawyer.
-
-		if (log_popup_lawyer.value)
-			mod_relay.Lawyer.getOne(
-				conversation_id,
-				log_popup_lawyer.value
+		for (let i = 1; i < list.length; i++)
+			mod_relay.Code.getOne(
+				list[i].innerText
 			)(doc => {
 				if (doc)
-					data.lawyer = {
+					codes.push({
 						_id: doc._id,
-						name: doc.name
-					};
+						code: doc.code
+					});
 
-				fnb(!doc ? "lawyer" : null);
+				fn();
 			});
-		else
-			fnb("lawyer");
-
-
-		// Verify codes.
-
-		let list = log_popup_code.getElementsByTagName("label");
-		if (list.length > 1) {
-			let codes = [];
-			let count = list.length - 1;
-			let fn = _ => {
-				count--;
-
-				if (count)
-					return;
-
-				data.codes = codes;
-
-				fnb(codes.length < list.length - 1 ? "code" : null);
-			};
-
-			for (let i = 1; i < list.length; i++)
-				mod_relay.Code.getOne(
-					list[i].innerText
-				)(doc => {
-					if (doc)
-						codes.push({
-							_id: doc._id,
-							code: doc.code
-						});
-
-					fn();
-				});
-		} else
-			fnb("code");
-	});
-}
+	} else
+		fnb("code");
+});
 
 ctrl_log.addEventListener("click", _ => {
+	if (!mod_client.selected.cases.selected)
+		return vergil(
+			"<div style=color:var(--warning)>" +
+			"You need to create a <b>case matter</b> first!" +
+			"</div>",
+			2600
+		);
+
 	// Reset everything before revealing.
 	log_popup_date.value =
 		log_popup_start.value =

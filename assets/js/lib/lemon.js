@@ -35,6 +35,33 @@ const lemon = {
 }
 
 /**
+ * See if 2 ranges of time overlap with each other. All must be
+ * converted to minutes.
+ *
+ * @param {Number} start0 - 1st starting time.
+ * @param {Number} end0 - 1st ending time.
+ * @param {Number} start1 - 2nd starting time.
+ * @param {Number} end1 - 2nd ending time.
+ * @return {Number} -2 if invalid, -1 if doesn't intersect, otherwise
+ * the total time that overlapped. 0 is still considered overlapping.
+**/
+lemon.intersectRange = (start0, end0, start1, end1) => {
+	if (start0 > end0 || start1 > end1)
+		return -2;
+
+	// Range value of 0.
+	if (start0 == end0)
+		return start0 >= start1 && start0 <= end1 ? 0 : -1;
+	else if (start1 == end1)
+		return start1 >= start0 && start1 <= end0 ? 0 : -1;
+
+	let n = start0 < start1 ?
+		Math.min(end0 - start1, end1 - start1) :
+		Math.min(end1 - start0, end0 - start0);
+	return n <= 0 ? -1 : n;
+};
+
+/**
  * Get standard time from minutes.
  *
  * @param {Integer} time - The time.
@@ -44,7 +71,6 @@ lemon.time.minutesToStandard = time => {
 	let hr = Math.floor(time/60);
 	let mn = time%60;
 	let md = hr >= 12 ? " PM" : " AM";
-	console.log(hr, mn)
 	hr = !hr ? 12 : hr > 12 ? (hr - 12) : hr;
 
 	return ("00" + hr).slice(-2) + ":" + ("00" + mn).slice(-2) + md; 

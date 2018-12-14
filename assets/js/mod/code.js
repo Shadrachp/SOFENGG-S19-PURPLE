@@ -30,7 +30,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			if (doc.code.search(/\S/) == -1)
 				return;
 
-			let btn = doc.btn = q("!label");
+			let btn = doc.btn = q("!label disabled=1");
 			btn.innerHTML =
 				"<label>" + doc.code + "</label>" +
 				(doc.description || "");
@@ -42,9 +42,6 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 					btn,
 					code_space.childNodes[index]
 				);
-
-			btn.addEventListener("click", event => {
-			});
 
 			return doc;
 		},
@@ -64,7 +61,43 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		}
 	})(mod_code);
 
-	mod_code.init();
+	let codes = mod_excel.fromCSV("config/codes.csv");
+
+	if (codes) {
+		let n = codes.length + 1;
+		let fn = _ => {
+			n--;
+
+			if (n)
+				return;
+
+			mod_code.init();
+		};
+
+
+		// Remove everything not inside the array.
+		mod_relay.Code.trim(codes.map(v => v[0].toUpperCase()))(fn);
+
+
+		// Create non-existent codes and update existing ones.
+		codes.forEach(v => {
+			mod_relay.Code.getOne(v[0])(doc => {
+				if (doc) {
+					if (doc.description != v[1])
+						mod_relay.Code.edit(v[0], {
+							description: v[1]
+						})(fn);
+					else
+						fn();
+				} else
+					mod_relay.Code.new({
+						code: v[0],
+						description: v[1] || ""
+					})(fn);
+			});
+		});
+	} else
+		mod_code.init();
 
 
 

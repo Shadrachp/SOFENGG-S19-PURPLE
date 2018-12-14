@@ -40,7 +40,7 @@ mod_info.stats_time_convert = n => {
  * selected client's log collection.
 **/
 mod_info.stats_time_update = time => {
-	info_stats_time.innerHTML =
+	info_time.innerHTML =
 		time ? mod_info.stats_time_convert(time) : "N/A";
 };
 
@@ -52,9 +52,12 @@ mod_info.stats_time_update = time => {
  * a client.
 **/
 mod_info.stats_log_update = logs_count => {
-	info_stats_log.innerHTML =
+	info_log.innerHTML =
 		logs_count ? logs_count + " Log" +
 		(logs_count > 1 ? "s" : "") : "N/A";
 };
+
+[info_name, info_time, info_log]
+	.forEach(v => tipper(v, _ => v.innerHTML));
 
 spook.return();

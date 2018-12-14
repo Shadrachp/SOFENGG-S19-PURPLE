@@ -9,6 +9,8 @@
 const mod_login = {};
 
 {
+	mod_login.getUserId = _ => _;
+
 	let accept = _ => {
 		// Make sure the user did put something in the inputs.
 		if (!login_user.value && !login_pwrd.value)
@@ -39,11 +41,11 @@ const mod_login = {};
 		mod_relay.User.get(
 			login_user.value,
 			login_pwrd.value
-		)(id => {
+		)(_id => {
 			// Hide the loading screen.
 			mod_loading.hide();
 
-			switch(id) {
+			switch(_id) {
 				case 0:
 					return vergil(
 						"<div style=color:var(--warning)>" +
@@ -59,12 +61,13 @@ const mod_login = {};
 						1800
 					);
 				default:
-					if (!id)
+					if (!_id)
 						return;
 
-					[mod_client, mod_lawyer, mod_log, mod_pref].forEach(v =>
-						v.setConversationID(id)
-					);
+					mod_login.getUserId = _ => _id;
+
+					// Initialize.
+					[mod_client, mod_lawyer].forEach(v => v.init());
 
 					// Show the `space` and hide the `login` screen.
 					space.removeAttribute("hidden");
@@ -86,6 +89,31 @@ const mod_login = {};
 	login_user.addEventListener("keydown", input);
 	login_pwrd.addEventListener("keydown", input);
 	login_acpt.addEventListener("click", accept);
+
+	logout_popup_yes.addEventListener("click", _ => {
+		logout_popup.setAttribute("invisible", 1);
+		login.removeAttribute("invisible");
+
+		mod_login.getUserId = _ => _;
+
+		[mod_client, mod_lawyer].forEach(v => v.flush());
+
+		space.setAttribute("hidden", 1);
+
+		mod_loading.show();
+
+		setTimeout(_ => {
+			mod_loading.hide();
+
+			client_new.setAttribute("glow", 1);
+			space_empty.removeAttribute("invisible");
+			[info, ctrl_logs, case_space].forEach(v =>
+				v.setAttribute("invisible", 1)
+			);
+
+			login_user.focus();
+		}, 300);
+	});
 }
 
 ctrl_logout.addEventListener("click", _ =>
@@ -95,30 +123,5 @@ ctrl_logout.addEventListener("click", _ =>
 logout_popup_no.addEventListener("click", _ =>
 	logout_popup.setAttribute("invisible", 1)
 );
-
-logout_popup_yes.addEventListener("click", _ => {
-	logout_popup.setAttribute("invisible", 1);
-	login.removeAttribute("invisible");
-
-	[mod_client, mod_lawyer, mod_log, mod_pref].forEach(v =>
-		v.setConversationID()
-	);
-	[mod_client, mod_lawyer].forEach(v => v.flush());
-
-	space.setAttribute("hidden", 1);
-
-	mod_loading.show();
-
-	setTimeout(_ => {
-		mod_loading.hide();
-
-		client_new.setAttribute("glow", 1);
-		space_empty.removeAttribute("invisible");
-		info.setAttribute("invisible", 1);
-		ctrl_logs.setAttribute("invisible", 1);
-
-		login_user.focus();
-	}, 300);
-});
 
 spook.return();

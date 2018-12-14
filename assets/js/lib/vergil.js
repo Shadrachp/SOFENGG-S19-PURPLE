@@ -31,7 +31,7 @@
 	min-width: 160px;
 	max-width: 640px;
 	padding: 16px 32px;
-	border-radius: 16px;
+	border-radius: 8px;
 	background-color: #fff;
 	box-shadow: 0 0 1px #000;
 	font-size: 18px;
@@ -46,7 +46,7 @@
 }
 
 .vergil:hover {
-	border-radius: 8px;
+	border-radius: 4px;
 }
 	`;
 	document.head.appendChild(v);

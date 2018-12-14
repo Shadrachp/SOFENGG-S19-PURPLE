@@ -228,7 +228,8 @@ const mod_relay = {
 			"new",
 			"edit",
 			"get",
-			"getOne"
+			"getOne",
+			"delete"
 		]
 	}
 

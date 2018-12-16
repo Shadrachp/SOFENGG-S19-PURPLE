@@ -17,5 +17,6 @@ EF,Email From
 TT,Telephone To
 TF,Telephone From
 TC,Telephone Conference
-TM,Text Messaging
-F,Filing
+PD,Preperation of Documents
+OW,Other Work
+CO,Coordination

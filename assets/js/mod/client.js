@@ -5,9 +5,46 @@
  * @dependencies qTiny.js, info.js, relay.js, tipper.js, sidebar.js
 **/
 const mod_client = {
-	pref_btn: "<img class=sidebar_pref " +
-		"src=../img/sidebar_pref.png " +
+	string: {
+		pref_btn: "<img class=sidebar_pref " +
+		"src=../img/preferences_small.png " +
 		"draggable=false>"
+	},
+	callback: {
+		rename: (event, doc, name) =>
+			mod_relay.Client.edit(doc._id, {name})(flag => {
+				if (flag) {
+					let key = name.toUpperCase();
+					let key_old = doc.key;
+
+					doc.key = key;
+					info_name.innerHTML = doc.name = name;
+
+					mod_client.move(key_old, key);
+
+					if (doc.hasOwnProperty("btn"))
+						doc.btn.innerHTML =
+							name + mod_client.string.pref_btn;
+				}
+
+				event.return(flag);
+			}),
+		delete: (event, doc) =>
+			mod_relay.Client.delete(doc._id)(flag => {
+				if (flag) {
+					client_new.setAttribute("glow", 1);
+					space_empty.removeAttribute("invisible");
+					[info, ctrl_logs, case_space].forEach(v =>
+						v.setAttribute("invisible", 1)
+					);
+
+					mod_client.flush();
+					mod_client.init();
+				}
+
+				event.return(flag);
+			})
+	}
 };
 
 spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
@@ -51,7 +88,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			}
 
 			let btn = doc.btn = q("!label");
-			btn.innerHTML = doc.name + mod_client.pref_btn;
+			btn.innerHTML = doc.name + mod_client.string.pref_btn;
 
 			if (mod_client.selected == doc)
 				btn.setAttribute("selected", 1);
@@ -66,7 +103,12 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 
 			btn.addEventListener("click", event => {
 				if (event.target != btn)
-					return mod_client_edit.show(doc);
+					return mod_edit_popup.show(
+						"Client",
+						doc,
+						mod_client.callback.rename,
+						mod_client.callback.delete
+					);
 
 				let prev = mod_client.selected;
 

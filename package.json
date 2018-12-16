@@ -19,7 +19,7 @@
   "dependencies": {
     "better-xlsx": "^0.7.3",
     "js-xlsx": "^0.8.22",
-    "mongoose": "^5.3.6",
+    "mongoose": "^5.4.0",
     "xlsx": "^0.14.1"
   }
 }

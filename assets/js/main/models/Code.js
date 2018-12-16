@@ -7,7 +7,8 @@
 module.exports = models => { return {
 	code: {
 		type: String,
-		required: true
+		required: true,
+		unique: true
 	},
 	description: {
 		type: String,

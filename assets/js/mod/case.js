@@ -2,13 +2,71 @@
  * Enable functionality for the case creation and interface.
  *
  * @author Llyme
- * @dependencies qTiny.js, info.js, relay.js, tipper.js, sidebar.js
 **/
-const mod_case = {};
+const mod_case = {
+	strings: {
+		log_space:
+			"#log !div " +
+			"class=log_space " +
+			"scroll=1 " +
+			"invisible=1",
+		noSelectedCase:
+			"<div style=color:var(--warning)>" +
+			"You need to create a <b>case matter</b> first!</div>"
+	},
+	callback: {
+		rename: (event, doc, name) =>
+			mod_relay.Case.edit(doc._id, {name})(flag => {
+				if (flag) {
+					let key = name.toUpperCase();
+					let key_old = doc.key;
+
+					doc.key = key;
+					doc.name = name;
+
+					if (doc.hasOwnProperty("btn"))
+						doc.btn.innerHTML = name;
+				}
+
+				event.return(flag);
+			}),
+		delete: (event, doc) =>
+			mod_relay.Case.delete(doc._id)(flag => {
+				if (flag) {
+					mod_info.stats_time_update(0);
+					mod_info.stats_log_update(0);
+
+					mod_client.selected.cases.flush().init();
+				}
+
+				event.return(flag);
+			})
+	}
+};
 
 mod_case.get = mod_case.new = _ => _;
 
 spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
+	ctrl_pref.addEventListener("click", _ => {
+		let client = mod_client.selected;
+
+		if (client) {
+			let casematter = client.cases.selected;
+
+			if (casematter)
+				return mod_edit_popup.show(
+					"Case Matter",
+					casematter,
+					mod_case.callback.rename,
+					mod_case.callback.delete
+				);
+		}
+
+		vergil(mod_case.strings.noSelectedCase, 2800);
+	});
+
+	tipper(ctrl_pref, "Edit Case Matter");
+
 	mod_case.new = (client_id, case_space) => {
 		let cases = {selected: null};
 
@@ -16,7 +74,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 			getter: (skip, limit) =>
 				mod_relay.Case.get(client_id, skip, limit, ""),
 
-			key: doc => doc._id,
+			key: doc => doc.key || doc.name.toUpperCase(),
 
 			new: (doc, index) => {
 				if (doc.name.search(/\S/) == -1)
@@ -31,21 +89,17 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 
 					doc = cases.selected;
 				} else {
+					doc.key = doc.name.toUpperCase();
 					doc.time = doc.time == null ? 0 : doc.time;
 					doc.logs_count =
 						doc.logs_count == null ? 0 : doc.logs_count;
-					doc.log_space = q(
-						"#log !div " +
-						"class=log_space " +
-						"scroll=1 " +
-						"invisible=1"
-					)
+					doc.log_space = q(mod_case.strings.log_space)
 					doc.logs = mod_log.new(doc._id, doc.log_space);
 
 					doc.logs.init();
 				}
 
-				let btn = doc.btn = q("!label");
+				let btn = doc.btn = document.createElement("label");
 				btn.innerHTML = doc.name;
 
 				if (cases.selected == doc)
@@ -117,9 +171,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 
 				cases.selected.log_space.remove();
 				cases.selected = null;
-			},
-
-			sort: (a, b) => a.name.toUpperCase() < b.name.toUpperCase()
+			}
 		})(cases);
 
 		return cases;

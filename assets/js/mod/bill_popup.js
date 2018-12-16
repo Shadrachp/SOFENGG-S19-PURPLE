@@ -18,8 +18,9 @@ const mod_bill_popup = {
 };
 
 {
-	let target;
-	let writeTotal = update => {
+    let target;
+    const bill_by_lawyer = document.getElementById("bill_popup_bill_by_lawyer");
+    let writeTotal = update => {
 		if (update) {
 			target.elements.rate
 				.forEach(v => v.innerHTML = target.rate);
@@ -39,11 +40,12 @@ const mod_bill_popup = {
 	ctrl_bill.addEventListener("click", _ => {
 		let client = mod_client.selected;
 		let casematter = client.cases.selected;
-
+        while (bill_by_lawyer.firstChild)
+            bill_by_lawyer.removeChild(bill_by_lawyer.firstChild);
 		if (!casematter)
 			return vergil(
 				"<div style=color:var(--warning)>" +
-				"You need to create a case matter first!</div>",
+				"You need to create a <b>case matter</b> first!</div>",
 				2600
 			);
 
@@ -122,6 +124,18 @@ const mod_bill_popup = {
 		bill_popup.setAttribute("invisible", 1);
 	});
 
+	function BillByLawyer(logs){
+		const bill_by_lawyer = document.getElementById("bill_popup_bill_by_lawyer");
+        const billme = bill_by_lawyer.options[bill_by_lawyer.selectedIndex].value.toString();
+        for (let i = 0; i < logs.length; i++)
+			if(logs[i].lawyer.name !== billme)
+				logs.splice(i, 1);
+        return logs;
+        // return array.filter((logs, index, arr)=>{
+        //     return logs === billme.options[billme.selectedIndex].value;
+        // });
+	}
+
 	bill_popup_submit.addEventListener("click", _ => {
 		if (!target.logs_count)
 			return vergil(
@@ -139,16 +153,18 @@ const mod_bill_popup = {
 
 		document.activeElement.blur();
 		mod_loading.show();
-
 		mod_excel.generate(target, flag => {
-			if (flag == true) {
-				let n = target.logs.length + 1;
+            target.logs = BillByLawyer(target.logs);
+            if (flag == true) {
+                let n = target.logs.length + 1;
+                for (let i = 0; i < target.logs.length; i++) {
+                	alert(target.logs[i].lawyer.name);
+                }
 				let fn = _ => {
 					n--;
 
-					if (n)
+                    if (n)
 						return;
-
 					bill_popup.setAttribute("invisible", 1);
 
 					target.case.logs.flush();
@@ -208,7 +224,8 @@ const mod_bill_popup = {
 
 
 	mod_bill_popup.populate = docs => {
-		target.elements = {
+        let prev = [];
+        target.elements = {
 			rate: [],
 			fee: []
 		};
@@ -221,7 +238,10 @@ const mod_bill_popup = {
 
 			let tr = q("!tr");
 			bill_popup_tbody.appendChild(tr);
-
+			if(!prev.includes(doc.lawyer.name)) {
+                bill_by_lawyer.innerHTML = "<option value =" + doc.lawyer.name + ">" + doc.lawyer.name + "</option>" + bill_by_lawyer.innerHTML;
+                prev.push(doc.lawyer.name);
+            }
 			[
 				td => {
 					let elm = mod_cosmetics.checkbox(
@@ -245,18 +265,21 @@ const mod_bill_popup = {
 
 						target.date_from = target.date_to = null;
 
-						for (let i = 0; i < docs.length; i++) {
-							if (docs[i].include)
-								target.date_to = new Date(docs[i].date)
+						for (let i = 0;
+							i < docs.length &&
+							(!target.date_from || !target.date_to);
+							i++) {
+							let to = docs[i];
+							let from = docs[docs.length - i - 1];
+
+							if (!target.date_to && to.include)
+								target.date_to = new Date(to.date)
 									.toLocaleDateString();
 
-							if (docs[docs.length - i - 1].include)
-								target.date_from = new Date(
-									docs[docs.length - i - 1].date
-									).toLocaleDateString();
-
-							if (target.date_from && target.date_to)
-								break;
+							if (!target.date_from &&
+								docs[docs.length - i - 1].include)
+								target.date_from = new Date(from.date)
+									.toLocaleDateString();
 						}
 
 						bill_popup_date.innerHTML =

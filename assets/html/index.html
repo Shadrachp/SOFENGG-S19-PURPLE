@@ -26,13 +26,12 @@
 
 		<div id=ctrl>
 			<img id=ctrl_logout src=../img/logout.png draggable=false>
-			<img id=ctrl_help src=../img/help.png draggable=false hidden>
+			<img id=ctrl_account src=../img/account.png draggable=false>
 			<div id=ctrl_logs invisible>
-				<button id=ctrl_log
-					button="0"
-				>New Log</button><button id=ctrl_bill
-					button="0"
-				>Billing</button>
+				<img id=ctrl_pref src=../img/preferences.png draggable=false
+				><button id=ctrl_sort><img src=../img/sort.png draggable=false></button
+				><button id=ctrl_log button="0">New Log</button
+				><button id=ctrl_bill button="0">Billing</button>
 			</div>
 		</div>
 
@@ -113,36 +112,76 @@
 		</div>
 	</div>
 
-	<div id=client_edit class=edit_popup popup invisible>
+	<div id=account class=edit_popup popup invisible>
 		<dim></dim>
 		<div scroll="0">
-			<label class=edit_popup_label>Client Name</label>
-			<input id=client_edit_name type=text input_text="0">
-			<img id=client_edit_close class=edit_popup_close src=../img/close_small.png draggable=false>
-			<sep></sep>
-			<button id=client_edit_delete class=edit_popup_danger button="0">Delete This Client</button>
+			<button id=account_uname button="0">Change Username</button
+			><button id=account_pword button="0">Change Password</button>
+			<img id=account_close
+				class=edit_popup_close
+				src=../img/close_small.png
+				draggable=false>
 		</div>
 	</div>
 
-	<div id=lawyer_edit class=edit_popup popup invisible>
+	<div id=account_popup class=edit_popup popup invisible>
 		<dim></dim>
 		<div scroll="0">
-			<label class=edit_popup_label>Lawyer Name</label>
-			<input id=lawyer_edit_name type=text input_text="0">
-			<img id=lawyer_edit_close class=edit_popup_close src=../img/close_small.png draggable=false>
-			<sep></sep>
-			<button id=lawyer_edit_delete class=edit_popup_danger button="0">Delete This Lawyer</button>
+			<label id=account_popup_label></label>
+			<input id=account_popup_input input_text="0">
+			<label id=account_popup_pword_label>Confirm Password</label>
+			<input id=account_popup_pword type=password input_text="0">
+			<img id=account_popup_close
+				class=edit_popup_close
+				src=../img/close_small.png
+				draggable=false>
+			<button id=account_popup_submit
+				class=edit_popup_submit
+				button="0">Submit</button>
 		</div>
 	</div>
 
-	<div id=case_edit class=edit_popup popup invisible>
+	<div id=log_edit_popup class=edit_popup popup invisible>
 		<dim></dim>
 		<div scroll="0">
-			<label class=edit_popup_label>Client Name</label>
-			<input id=case_edit_name type=text input_text="0">
-			<img id=case_edit_close class=edit_popup_close src=../img/close_small.png draggable=false>
+			<label>Date</label>
+			<input id=log_edit_popup_date type=text input_text="0">
+			<label>Starting Time</label>
+			<input id=log_edit_popup_start type=text input_text="0">
+			<label>Ending Time</label>
+			<input id=log_edit_popup_end type=text input_text="0">
+			<label>Lawyer</label>
+			<input id=log_edit_popup_lawyer type=text input_text="0">
+			<label>Code</label>
+			<div id=log_edit_popup_code
+				scroll="0"><label contenteditable=true></label></div>
+			<label>Description</label>
+			<div id=log_edit_popup_desc
+				contenteditable=true
+				input_text="0"
+				scroll="0"></div>
+			<img id=log_edit_popup_close
+				class=edit_popup_close
+				src=../img/close_small.png
+				draggable=false>
+			<button id=log_edit_popup_submit
+				class=edit_popup_submit
+				button="0" disabled>Submit</button>
 			<sep></sep>
-			<button id=case_edit_delete class=edit_popup_danger button="0">Delete This Client</button>
+			<button id=log_edit_popup_danger
+				class=edit_popup_danger
+				button="0">Delete This Log</button>
+		</div>
+	</div>
+
+	<div id=edit_popup class=edit_popup popup invisible>
+		<dim></dim>
+		<div scroll="0">
+			<label id=edit_popup_label></label>
+			<input id=edit_popup_name type=text input_text="0">
+			<img id=edit_popup_close class=edit_popup_close src=../img/close_small.png draggable=false>
+			<sep></sep>
+			<button id=edit_popup_danger class=edit_popup_danger button="0"></button>
 		</div>
 	</div>
 
@@ -209,7 +248,15 @@
 					type=text
 					input_text="0"
 					disabled>12/04/2018 - 12/04/2018</div>
-			</div><br><div class=bill_popup_entry>
+			</div><div class="bill_popup_entry">
+			<label>Bill By</label>
+			<select id=bill_popup_bill_by_lawyer>
+				<option>Test</option>
+				<option>Test</option>
+				<option>Test</option>
+				<option>Test</option>
+			</select>
+		</div><br><div class=bill_popup_entry>
 				<label>Partner</label>
 				<input id=bill_popup_partner
 					type=text

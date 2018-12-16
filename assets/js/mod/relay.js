@@ -77,7 +77,8 @@ const mod_relay = {
 			 * 1 = Incorrect password;
 			 * 2 = Found username and correct password.
 			**/
-			"get"
+			"get",
+			"edit"
 		],
 		Client: [
 			/**
@@ -129,7 +130,8 @@ const mod_relay = {
 		Log: [
 			"new",
 			"edit",
-			"get"
+			"get",
+			"delete"
 		],
 		Lawyer: [
 			/**

@@ -21,6 +21,12 @@ dim {
 	transition: all 0.2s;
 }
 
+sep {
+	display: block;
+	margin: 32px;
+	border-bottom: 4px dotted var(--warning);
+}
+
 :root {
 	/* Use this color if the user did something wrong and couldn't
 	   be processed by the system.
@@ -270,7 +276,7 @@ smaller {
 
 [scroll="0"]::-webkit-scrollbar-thumb {
 	background-color: var(--cancel);
-	border-radius: 4px;
+	border-radius: 2px;
 }
 
 [scroll="0"]::-webkit-scrollbar-thumb:hover {
@@ -279,7 +285,7 @@ smaller {
 
 [scroll="1"]::-webkit-scrollbar-thumb {
 	background-color: #fff;
-	border-radius: 4px;
+	border-radius: 2px;
 }
 
 [scroll="1"]::-webkit-scrollbar-thumb:hover {
@@ -871,11 +877,9 @@ smaller {
 	padding: 16px;
 }
 
-#ctrl div {
-	display: inline;
-}
-
 #ctrl button {
+	vertical-align: top;
+	display: inline;
 	height: 32px;
 }
 
@@ -893,10 +897,13 @@ smaller {
 	color: #fff;
 }
 
+#ctrl_logs {
+	display: inline-block;
+}
+
 #ctrl img {
 	margin-right: 24px;
 	border-radius: 16px;
-	float: right;
 	cursor: pointer;
 	transition: all 0.2s;
 }
@@ -911,9 +918,40 @@ smaller {
 	transition: all 0.1s;
 }
 
+#ctrl button#ctrl_sort {
+	padding: 4px;
+	margin-left: 0;
+	border: none;
+	background: none;
+	outline: none;
+}
+
+#ctrl_sort > img {
+	margin: 0;
+	border-radius: 0;
+}
+
+img#ctrl_pref {
+	padding: 4px;
+	margin-right: 16px;
+}
+
+img#ctrl_pref:hover {
+	transform: rotateZ(45deg);
+}
+
+img#ctrl_pref:active {
+	transform: scale(0.9) rotateZ(45deg);
+}
+
+img#ctrl_account {
+	float: right;
+}
+
 img#ctrl_logout {
 	margin-right: 0;
 	border-radius: 0;
+	float: right;
 }
 
 
@@ -1071,7 +1109,8 @@ img#ctrl_logout {
 }
 
 #bill_popup_rate,
-#bill_popup_vat {
+#bill_popup_vat,
+#bill_popup_bill_by_lawyer{
 	width: 64px;
 }
 
@@ -1169,9 +1208,9 @@ img#ctrl_logout {
 	transition: all 0.2s;
 }
 
-.log_space > * {
+.log_space > div {
 	display: block;
-	padding: 0 8px;
+	padding-right: 8px;
 	border-radius: 4px;
 	background-color: #fff;
 	cursor: pointer;
@@ -1179,33 +1218,54 @@ img#ctrl_logout {
 	overflow: hidden;
 }
 
-.log_space > *[billed]:not(:hover):not([expand]) {
+.log_space > div[billed]:not(:hover):not([expand]) {
 	opacity: 0.4;
 }
 
-.log_space > * > div {
+.log_space > div > div {
 	display: none;
 }
 
-.log_space > *[expand] > div {
+.log_space > div[expand] > div {
 	display: block;
 }
 
-.log_space > *:hover {
+.log_space > div:hover {
 }
 
-.log_space > *:not(:last-child) {
+.log_space > div:not(:last-child) {
 	margin-bottom: 8px;
 }
 
-.log_space > * * {
-	pointer-events: none;
+.log_space > div * {
+	cursor: pointer;
+}
+
+img.log_space_pref {
+	width: 24px;
+	height: 24px;
+	vertical-align: top;
+	margin-top: 4px;
+	margin-left: 4px;
+	margin-right: 8px;
+	pointer-events: auto;
+	transition: all 0.2s;
+}
+
+.log_space_pref:hover {
+	transform: rotateZ(45deg) scale(1.2);
+}
+
+.log_space_pref:active {
+	opacity: 1;
+	filter: brightness(80%);
+	transform: rotateZ(45deg);
+	transition: all 0.1s;
 }
 
 .log_space_time,
 .log_space_date {
 	line-height: 32px;
-	pointer-events: none;
 }
 
 .log_space_time {
@@ -1227,12 +1287,14 @@ img#ctrl_logout {
 .log_space_range {
 	display: block;
 	margin: 8px 0;
+	margin-left: 8px;
 	color: var(--info);
 	font-size: 14px;
 	font-weight: bold;
 }
 
 .log_space_lawyer {
+	margin-left: 8px;
 	display: inline-block;
 	margin-bottom: 8px;
 	font-size: 14px;
@@ -1247,6 +1309,7 @@ img#ctrl_logout {
 
 .log_space_code {
 	display: block;
+	margin-left: 8px;
 }
 
 .log_space_code > b {
@@ -1276,6 +1339,7 @@ img#ctrl_logout {
 .log_space_desc {
 	display: block;
 	margin-bottom: 8px;
+	margin-left: 8px;
 	padding: 6px 8px;
 	border-radius: 4px;
 	background-color: #fff;
@@ -1432,7 +1496,98 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 
 
 
-/*-- client_popup --*/
+/*-- log_edit_popup --*/
+
+#log_edit_popup_code {
+	display: block;
+	max-height: 96px;
+	margin-top: 8px;
+	margin-left: 8px;
+	padding: 7px 10px;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+#log_edit_popup_code label {
+	display: inline-block;
+	padding: 2px 8px;
+	margin-bottom: 8px;
+	border: none;
+	border-radius: 4px;
+	outline: none;
+	font-size: 14px;
+	pointer-events: auto;
+	cursor: pointer;
+	transition: all 0.2s;
+	word-break: break-all;
+}
+
+#log_edit_popup_code label:not(:first-child) {
+	margin-left: 8px;
+	box-shadow: 0 0 1px #000;
+	background-color: #fff;
+}
+
+#log_edit_popup_code label:not(:first-child):hover {
+	background-color: #ff9f9f;
+}
+
+#log_edit_popup_code label:first-child {
+	background-color: var(--accent-code);
+	color: #fff;
+	transition: all 0.2s;
+}
+
+#log_edit_popup_code label:first-child:focus {
+	background-color: #fff;
+	box-shadow: 0 0 4px var(--accent-code);
+	color: #000;
+	padding: 4px 10px;
+	cursor: text;
+}
+
+#log_edit_popup_code label:first-child:empty:not(:focus)::before {
+	content: "+";
+}
+
+#log_edit_popup_desc {
+	display: inline-block;
+	width: calc(100% - 48px);
+	padding: 8px 12px;
+	margin: 8px;
+	border: none;
+	outline: none;
+	font-size: 14px;
+}
+
+
+
+
+/*-- account --*/
+
+#account > div > button {
+	display: block;
+	margin: 0 32px;
+	margin-top: 24px;
+	width: calc(100% - 64px);
+	color: #fff;
+	background-color: var(--info);
+	font-size: 14px;
+}
+
+
+
+
+/*-- `account_popup` --*/
+
+#account_popup_pword_label {
+	color: var(--warning);
+}
+
+
+
+
+/*-- `client_popup` --*/
 
 #client_popup > div {
 	padding: 8px;
@@ -1474,6 +1629,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	display: block;
 	margin: 32px;
 	font-size: 18px;
+	text-align: center;
 }
 
 #delete_popup_name {
@@ -1509,7 +1665,7 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	overflow-y: auto;
 }
 
-.edit_popup_label {
+.edit_popup > div > label {
 	display: block;
 	margin: 8px;
 	margin-bottom: 0;
@@ -1526,12 +1682,6 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	border: none;
 	outline: none;
 	font-size: 14px;
-}
-
-.edit_popup > div > sep {
-	display: block;
-	margin: 32px;
-	border-bottom: 4px dotted var(--warning);
 }
 
 .edit_popup_close {
@@ -1554,6 +1704,19 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	box-shadow: 0 0 1px #000;
 	filter: brightness(80%);
 	transition: all 0.1s;
+}
+
+.edit_popup_submit {
+	display: block;
+	margin: 0 32px;
+	margin-top: 32px;
+	width: calc(100% - 64px);
+	background-color: var(--submit);
+	color: #fff;
+}
+
+.edit_popup_submit[disabled] {
+	opacity: 0.2;
 }
 
 .edit_popup_danger {

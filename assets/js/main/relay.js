@@ -338,9 +338,11 @@ let filter = {
 			spook.models.Log.findOne({
 				_id: new ObjectId(_id)
 			}).then(doc => {
-				console.log("BRUH", doc)
+				console.log("BRUH", doc);
 				if (doc) {
-					doc.set(properties);
+                    console.log("BRUH2", doc);
+
+                    doc.set(properties);
 					doc.save((err, doc) => event.sender.send(
 						channel,
 						id,

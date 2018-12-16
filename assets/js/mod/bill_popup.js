@@ -125,13 +125,16 @@ const mod_bill_popup = {
 		bill_popup.setAttribute("invisible", 1);
 	});
 
-	function BillByLawyer(logs){
-		const bill_by_lawyer = document.getElementById("bill_popup_bill_by_lawyer");
+	function BillByLawyer(logs) {
+        const bill_by_lawyer = document.getElementById("bill_popup_bill_by_lawyer");
         const billme = bill_by_lawyer.options[bill_by_lawyer.selectedIndex].value.toString();
-        for (let i = 0; i < logs.length; i++)
-			if(logs[i].lawyer.name !== billme)
-				logs.splice(i, 1);
-        return logs;
+        const arr = [];
+        while (logs.length){
+            if (logs[logs.length - 1].lawyer.name === billme)
+                arr.push(logs.pop());
+            else logs.pop();
+        }
+        return arr;
         // return array.filter((logs, index, arr)=>{
         //     return logs === billme.options[billme.selectedIndex].value;
         // });
@@ -326,30 +329,30 @@ const mod_bill_popup = {
 		});
 	};
 
-	bill_popup_bill_by_lawyer.addEventListener("click", _ => {
+	bill_popup_bill_by_lawyer.addEventListener("change", _ => {
 		// reset 
-		c = bill_popup_tbody
-		rows = c.rows
-		i=1
+		let c = bill_popup_tbody;
+		let rows = c.rows;
+		let i = 1;
 		while (i<rows.length) {
-			select = rows[i];
-			tds = select.getElementsByTagName("td")
+			let select = rows[i];
+			let tds = select.getElementsByTagName("td");
 			if (tds[0].firstElementChild.getAttribute("active") == 1 )
-				tds[0].firstElementChild.click()
+				tds[0].firstElementChild.click();
 			i++;
 		}
 
 		// select based dropdown
-		c = bill_popup_tbody
-		rows = c.rows
+		c = bill_popup_tbody;
+		rows = c.rows;
 		i = 1;
 		while (i<rows.length) {
-			select = rows[i];
-			tds = select.getElementsByTagName("td")
-			index = bill_popup_bill_by_lawyer.selectedIndex
-			name = bill_popup_bill_by_lawyer[index].innerText
-			if (tds[4].innerText == name) {
-				tds[0].firstElementChild.click()
+			let select = rows[i];
+			let tds = select.getElementsByTagName("td");
+			let index = bill_popup_bill_by_lawyer.selectedIndex;
+			let str = bill_popup_bill_by_lawyer[index].innerText;
+			if (tds[4].innerText == str) {
+				tds[0].firstElementChild.click();
 			}
 			i++;
 		}

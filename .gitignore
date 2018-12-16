@@ -2,3 +2,5 @@ node_modules
 *.xml
 package.json
 package-lock.json
+mongoDB
+mongodbdata

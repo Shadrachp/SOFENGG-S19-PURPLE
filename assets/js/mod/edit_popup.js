@@ -118,4 +118,8 @@ edit_popup_close.addEventListener("click", _ =>
 	edit_popup.setAttribute("invisible", 1)
 );
 
+edit_popup_submit.addEventListener("click", _ =>
+	edit_popup_close.click()
+);
+
 spook.return();

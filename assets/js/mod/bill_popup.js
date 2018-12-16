@@ -90,6 +90,7 @@ const mod_bill_popup = {
 			mod_bill_popup.populate(docs);
 
 			bill_popup.removeAttribute("invisible");
+			bill_popup_bill_by_lawyer.click();
 		});
 	});
 
@@ -324,6 +325,35 @@ const mod_bill_popup = {
 			});
 		});
 	};
+
+	bill_popup_bill_by_lawyer.addEventListener("click", _ => {
+		// reset 
+		c = bill_popup_tbody
+		rows = c.rows
+		i=1
+		while (i<rows.length) {
+			select = rows[i];
+			tds = select.getElementsByTagName("td")
+			if (tds[0].firstElementChild.getAttribute("active") == 1 )
+				tds[0].firstElementChild.click()
+			i++;
+		}
+
+		// select based dropdown
+		c = bill_popup_tbody
+		rows = c.rows
+		i = 1;
+		while (i<rows.length) {
+			select = rows[i];
+			tds = select.getElementsByTagName("td")
+			index = bill_popup_bill_by_lawyer.selectedIndex
+			name = bill_popup_bill_by_lawyer[index].innerText
+			if (tds[4].innerText == name) {
+				tds[0].firstElementChild.click()
+			}
+			i++;
+		}
+	});
 }
 
 spook.return();

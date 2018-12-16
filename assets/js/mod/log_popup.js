@@ -123,6 +123,7 @@ const mod_log_popup = {
 					lawyer_input,
 					code_input,
 					desc_input,
+					isbilled_input,
 					callback) => {
 		let data = {
 			date: new Date(
@@ -267,6 +268,21 @@ const mod_log_popup = {
 				});
 		} else
 			fnb("code");
+
+		// Verifiy is billed
+		if (isbilled_input == true) {
+			mod_relay.Log.edit(_id, {
+				billed: true
+			})(fn = _ => {
+				// console.log("bill true: "+_);
+			});
+		} else {
+			mod_relay.Log.edit(_id, {
+				billed: false
+			})(fn = _ => {
+				// console.log("bill false: "+_);
+			});
+		}
 	}
 };
 

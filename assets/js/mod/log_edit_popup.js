@@ -22,6 +22,12 @@ const mod_log_edit_popup = {};
 		log_edit_popup_code.innerHTML =
 			"<label contenteditable=true></label>";
 
+		// console.log("billed: "+target.billed);
+		log_edit_popup_isbilled.removeAttribute("active")
+		if (target.billed == true) {
+			log_edit_popup_isbilled.setAttribute("active",1);
+		}
+		
 		target.codes.forEach(v => {
 			let label = document.createElement("label");
 			label.innerHTML = v.code;
@@ -98,6 +104,7 @@ const mod_log_edit_popup = {};
 			log_edit_popup_lawyer,
 			log_edit_popup_code,
 			log_edit_popup_desc,
+			log_edit_popup_isbilled,
 			(data, case_space, doc) => {
 				mod_relay.Log.edit(target._id, doc)(flag => {
 					if (!flag)

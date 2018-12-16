@@ -1560,6 +1560,18 @@ label:not(#log_popup_desc_label):not(#log_popup_code_label) {
 	font-size: 14px;
 }
 
+#log_edit_popup_isbilled {
+	display: inline-block;
+	margin: 8px;
+	width: 32px;
+	height: 32px;
+	border: none;
+	border-radius: 4px;
+	outline: none;
+	background-color: rgba(185, 185, 185, 0.932);
+	cursor: pointer;
+	transition: all 0.2s;
+}
 
 
 

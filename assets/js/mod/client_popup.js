@@ -35,7 +35,7 @@ client_popup_create.addEventListener("click", _ => {
 	if (client_popup_input.value.length < 2 ||
 		client_popup_input.value.length > 64) return vergil(
 		"<div style=color:var(--warning)>" +
-		"Client's name must have at least <b>2 characters</b> and" +
+		"Name must have at least <b>2 characters</b> and" +
 		" up to <b>64 characters</b> at most." +
 		"</div>"
 	);

@@ -288,7 +288,6 @@ const mod_excel = {};
 
 
 	let generate_fn = (bill, path, callback) => {
-		console.log(bill)
 		let xlsx = better_xlsx;
 		let file = new xlsx.File();
 		let row, cell, style;

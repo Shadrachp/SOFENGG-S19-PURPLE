@@ -120,6 +120,8 @@ ctrl_logout.addEventListener("click", _ =>
 	logout_popup.removeAttribute("invisible")
 );
 
+tipper(ctrl_logout, "Logout");
+
 logout_popup_no.addEventListener("click", _ =>
 	logout_popup.setAttribute("invisible", 1)
 );

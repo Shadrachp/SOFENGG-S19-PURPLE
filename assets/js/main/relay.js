@@ -69,14 +69,11 @@ ipcMain.on("database_connected", event => {
 */
 let filter = {
 	User: {
-		new: (event, id, properties, channel) =>
+		new: (event, id, properties, channel) => {
+			properties.username = properties.username.toUpperCase();
+
 			spook.models.User.findOne({
-				username: new RegExp(
-					"^" +
-						literalRegExp(properties.username) +
-						"$",
-					"i"
-				)
+				username: properties.username
 			}).then(doc => {
 				if (!doc) {
 					properties.password =
@@ -92,12 +89,13 @@ let filter = {
 					);
 				} else
 					event.sender.send(channel, id, false);
-			}),
+			})
+		},
 
-		get: (event, id, username, password, channel) =>
-			spook.models.User.findOne({
-				username
-			}).then(doc => {
+		get: (event, id, username, password, channel) => {
+			username = username.toUpperCase();
+
+			spook.models.User.findOne({username}).then(doc => {
 				event.sender.send(
 					channel,
 					id,
@@ -112,6 +110,65 @@ let filter = {
 					) : 0
 				);
 			})
+		},
+
+		edit: (event, id, _id, password, properties, channel) => {
+			_id = new ObjectId(_id);
+
+			spook.models.User.findOne({
+				_id,
+				password:
+					crypto.createHash("sha256")
+					.update(password).digest("hex")
+			}).then(doc => {
+				if (!doc)
+					// Wrong password confirmation.
+					return event.sender.send(channel, id, 1);
+
+				let fn = _ => {
+					doc.set(properties);
+					doc.save((err, doc) =>
+						event.sender.send(
+							channel,
+							id,
+							err ? 5 : 0
+						)
+					);
+				};
+
+				if (properties.hasOwnProperty("password")) {
+					properties.password =
+						crypto.createHash("sha256")
+						.update(properties.password).digest("hex");
+
+					if (doc.password == properties.password)
+						// Same password.
+						return event.sender.send(channel, id, 4);
+
+					fn();
+				} else if (properties.hasOwnProperty("username")) {
+					properties.username =
+						properties.username.toUpperCase();
+
+					if (doc.username == properties.username)
+						// Same username.
+						return event.sender.send(channel, id, 3);
+
+					spook.models.User.findOne({
+						_id: {
+							$ne: _id
+						},
+						username: properties.username
+					}).then(doc_other => {
+						if (doc_other)
+							// Username exists.
+							return event.sender.send(channel, id, 2);
+
+						fn();
+					});
+				}
+			});
+		}
 	},
 
 	Client: {
@@ -281,6 +338,7 @@ let filter = {
 			spook.models.Log.findOne({
 				_id: new ObjectId(_id)
 			}).then(doc => {
+				console.log("BRUH", doc)
 				if (doc) {
 					doc.set(properties);
 					doc.save((err, doc) => event.sender.send(
@@ -303,8 +361,17 @@ let filter = {
 			query = query || {};
 			query.case = new ObjectId(case_id);
 
-			spook.models.Log.aggregate([{
+			let pipeline = [{
 				$match: query
+			}, {
+				$lookup: {
+					from: "lawyers",
+					localField: "lawyer",
+					foreignField: "_id",
+					as: "lawyer"
+				}
+			}, {
+				$unwind: "$lawyer"
 			}, {
 				$project: {
 					_id: {
@@ -319,46 +386,29 @@ let filter = {
 					billed: 1
 				}
 			}, {
-				$sort: sort
-			}]).then(docs => {
+				$addFields: {
+					"lawyer.key": {$toUpper: "$lawyer.name"}
+				}
+			}];
+
+			if (sort)
+				sort.forEach(v => pipeline.push({$sort: v}));
+
+			spook.models.Log.aggregate(pipeline).then(docs => {
 				if (!docs.length)
 					return event.sender.send(channel, id, []);
 
-				let n0 = docs.length;
-				let fn0 = _ => {
-					n0--;
+				let n = docs.length;
+				let fn = _ => {
+					n--;
 
-					if (n0)
+					if (n)
 						return;
 
 					event.sender.send(channel, id, docs);
 				};
 
 				docs.forEach(doc => {
-					let n1 = 2;
-					let fn1 = _ => {
-						n1--;
-
-						if (n1)
-							return;
-
-						fn0();
-					};
-
-					spook.models.Lawyer.findOne({
-						_id: doc.lawyer
-					}).then(lawyer_doc => {
-						doc.lawyer = lawyer_doc ? {
-							_id: lawyer_doc._id.toString(),
-							name: lawyer_doc.name
-						} : {
-							_id: "",
-							name: ""
-						};
-
-						fn1();
-					});
-
 					if (doc.codes.length)
 						spook.models.Code.aggregate([{
 							$match: {
@@ -379,15 +429,17 @@ let filter = {
 						}]).then(code_docs => {
 							doc.codes = code_docs;
 
-							fn1();
+							fn();
 						});
 					else
-						fn1();
+						fn();
 				});
 			});
 		},
 
 		delete: (event, id, _id, channel) => {
+			_id = new ObjectId(_id);
+
 			let n = 2;
 			let fn = _ => {
 				n--;
@@ -398,8 +450,6 @@ let filter = {
 				event.sender.send(channel, id, true);
 			}
 
-			_id = new ObjectId(_id);
-
 			spook.models.Log.findOne({_id}).then(doc => {
 				spook.models.Case.findOne({_id: doc.case})
 				.then(case_doc => {
@@ -409,9 +459,7 @@ let filter = {
 					case_doc.save(fn);
 				});
 
-				spook.models.Log.deleteOne({_id})
-				.exec()
-				.then(fn);
+				spook.models.Log.deleteOne({_id}).exec().then(fn);
 			});
 		}
 	},
@@ -794,13 +842,43 @@ let filter = {
 			spook.models.Case.aggregate(pipeline).then(docs =>
 				event.sender.send(channel, id, docs)
 			)
+		},
+
+		delete: (event, id, _id, channel) => {
+			_id = new ObjectId(_id);
+
+			let n = 2;
+			let fn = _ => {
+				n--;
+
+				if (n)
+					return;
+
+				event.sender.send(channel, id, true);
+			}
+
+			spook.models.Log
+				.deleteMany({
+					case: _id
+				})
+				.exec()
+				.then(fn);
+
+			spook.models.Case
+				.deleteOne({_id})
+				.exec()
+				.then(res =>
+					res.ok && res.n ?
+					fn() : event.sender.send(channel, id, false)
+				);
 		}
 	}
 };
 
 for (let model in filter) {
 	for (let operation in filter[model]) {
-		let channel = "database_" + model.toLowerCase() + "_" + operation;
+		let channel =
+			"database_" + model.toLowerCase() + "_" + operation;
 		let fn = filter[model][operation];
 
 		ipcMain.on(channel, function(event, id) {

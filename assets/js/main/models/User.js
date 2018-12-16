@@ -15,5 +15,10 @@ module.exports = models => { return {
 	password: {
 		type: String,
 		required: true
+	},
+	superuser: {
+		type: Number,
+		unique: true,
+		sparse: true
 	}
 }};

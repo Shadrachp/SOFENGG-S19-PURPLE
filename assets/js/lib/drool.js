@@ -69,12 +69,15 @@ const drool = {};
 	background-color: #000;
 }
 
+.drool_list * {
+	cursor: pointer;
+}
+
 .drool_list > * {
 	display: block;
 	font-size: 14px;
 	padding: 6px 8px;
 	word-wrap: break-word;
-	cursor: pointer;
 	transition: all 0.2s;
 }
 
@@ -284,20 +287,24 @@ drool.tooltip = (parent, txt, offset) => {
  * @param {HTMLElement} parent - The element that owns this
  * dropdown element.
  * @param {String[]} choices - A list of choices.
+ * @param {Number|null} width - Width of the elements. Width will
+ * be the parent's width if `null`.
  * @param {Function} callback - The callback to be called when
  * the user clicks on a choice. Returing `true` in this function
  * will close the dropdown element.
  * @return {Function({String[]} choices)} when this function is
  * called, it will re-create all the choices with the given
- * parameter.
+ * parameter. Passing `choices` as `null` will close the element.
 **/
-drool.list = (parent, choices, callback) => {
+drool.list = (parent, choices, width, callback) => {
+	width = width || parent.clientWidth;
+
 	let pos = parent.getBoundingClientRect();
 	let root = document.createElement("_");
 	root.className = "drool_list";
 	root.style.top = pos.bottom + "px";
-	root.style.left = pos.left + "px";
-	root.style.width = parent.clientWidth + "px";
+	root.style.left = pos.left - width/2 + parent.clientWidth/2 + "px";
+	root.style.width = width + "px";
 
 	document.body.appendChild(root);
 
@@ -322,6 +329,9 @@ drool.list = (parent, choices, callback) => {
 	fill(choices);
 
 	return choices => {
+		if (choices == null)
+			return d();
+
 		root.innerHTML = "";
 
 		fill(choices);
@@ -688,22 +698,21 @@ drool.relate = (child, parent) => {
  * and the link.
 **/
 drool.link = (parent, menu) => {
-	let d = _ => {
-		d = _ => {};
+	let fn0, fn1;
+	let callback = _ => {
+		parent.removeEventListener("focusout", fn0);
+		menu.removeEventListener("focusout", fn0);
+		document.removeEventListener("mousedown", fn1);
 
-		parent.removeEventListener("focusout", f0);
-		menu.removeEventListener("focusout", f0);
-		document.removeEventListener("mousedown", f1);
-
-		menu.style.pointerEvents = "none";
-		menu.style.animation = "none";
+		menu.style.pointerEvents =
+			menu.style.animation = "none";
 		menu.style.opacity = 0;
 		menu.style.transform = "translateY(-8px)";
 
 		setTimeout(_ => menu.remove(), 1000);
 	};
 
-	let f0 = event => {
+	fn0 = event => {
 		let v = event.relatedTarget ||
 			document.activeElement ||
 			document.elementFromPoint(
@@ -714,10 +723,10 @@ drool.link = (parent, menu) => {
 		if (!document.hasFocus() ||
 			!drool.relate(v, menu) &&
 			!drool.relate(v, parent))
-			d();
+			callback();
 	};
 
-	let f1 = event => {
+	fn1 = event => {
 		let v = document.elementFromPoint(
 			event.clientX,
 			event.clientY
@@ -730,11 +739,11 @@ drool.link = (parent, menu) => {
 		}
 	}
 
-	parent.addEventListener("focusout", f0);
-	menu.addEventListener("focusout", f0);
-	document.addEventListener("mousedown", f1);
+	parent.addEventListener("focusout", fn0);
+	menu.addEventListener("focusout", fn0);
+	document.addEventListener("mousedown", fn1);
 
-	return d;
+	return callback;
 };
 
 spook.return();

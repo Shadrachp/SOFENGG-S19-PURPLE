@@ -76,9 +76,10 @@ else {
 			renew => {
 				if (renew)
 					spook.models.User.new({
-						username: "admin",
+						username: "ADMIN",
 						password: require("crypto").createHash("sha256")
-							.update("1234").digest("hex")
+							.update("1234").digest("hex"),
+						superuser: 0
 					}, _ => _);
 
 				// Broadcast that we have connected to the database.

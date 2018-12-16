@@ -5,13 +5,160 @@
  * @dependencies vergil.js, log.js, drool.js, tipper.js, sidebar.js
 **/
 const mod_lawyer = {
-	tooltip_search:
-		"<center small>" +
-		"<b style=color:var(--info)>TYPE</b> to search for " +
-		"<b style=color:var(--accent-lawyer)>LAWYERS</b>.<br>" +
-		"</center>",
-	tooltip_load:
-		"<center small style=color:var(--info)>LOADING...</center>"
+	string: {
+		tooltip_search:
+			"<center small>" +
+			"<b style=color:var(--info)>TYPE</b> to search for " +
+			"<b style=color:var(--accent-lawyer)>LAWYERS</b>.<br>" +
+			"</center>",
+		tooltip_load:
+			"<center small style=color:var(--info)>LOADING...</center>"
+	},
+	callback: {
+		rename: (event, doc, name) =>
+			mod_relay.Lawyer.edit(doc._id, {name})(flag => {
+				if (flag) {
+					let key = name.toUpperCase();
+					let key_old = doc.key;
+
+					doc.key = key;
+					doc.name = doc.btn.innerHTML = name;
+
+					mod_lawyer.move(key_old, key);
+
+					mod_client.flush();
+					mod_client.init();
+				}
+
+				event.return(flag);
+			}),
+		delete: (event, doc) =>
+			mod_relay.Lawyer.delete(doc._id)(flag => {
+				if (flag) {
+					mod_lawyer.flush();
+					mod_client.flush();
+					mod_lawyer.init();
+					mod_client.init();
+				}
+
+				event.return(flag);
+			})
+	},
+	setLawyerCallbacks: (input, callback) => {
+		callback = callback || (_ => _);
+
+		let config = {
+			debounce: {},
+			tooltip: null,
+			update: null,
+			fn: _ => {
+				if (!config.update)
+					return;
+
+				if (!input.value) {
+					config.tooltip = drool.tooltip(
+						input,
+						mod_lawyer.string.tooltip_search,
+						8
+					);
+
+					return config.update([]);
+				}
+
+				let key = input.value.toUpperCase();
+
+				if (config.debounce.hasOwnProperty(key))
+					return;
+
+				config.debounce[key] = 1;
+
+				if (config.tooltip)
+					config.tooltip();
+
+				if (key) {
+					config.tooltip = drool.tooltip(
+						input,
+						mod_lawyer.string.tooltip_load,
+						8
+					);
+
+					mod_relay.Lawyer.get(
+						mod_login.getUserId(),
+						0,
+						32,
+						key
+					)(docs => {
+						delete config.debounce[key];
+
+						if (input.value.toUpperCase() == key) {
+							config.tooltip = config.tooltip();
+
+							config.update(docs.map(doc => doc.name));
+						}
+					});
+				}
+			}
+		};
+
+		input.addEventListener("focus", _ => {
+			if (input.getAttribute("debounce"))
+				return;
+
+			input.setAttribute("debounce", 1);
+
+			config.update = drool.list(
+				input,
+				[],
+				null,
+				(v, i) => {
+					input.value = v;
+					input.blur();
+
+					return true;
+				}
+			);
+
+			config.fn();
+		});
+
+		input.addEventListener("input", config.fn);
+
+		input.addEventListener("keydown", event =>
+			(event.keyCode == 13 || event.keyCode == 27) ?
+				input.blur() : 0
+		);
+
+		input.addEventListener("blur", _ => {
+			if (config.tooltip)
+				config.tooltip = config.tooltip();
+
+			config.update = null;
+
+			if (input.value) {
+				mod_loading.show();
+
+				mod_relay.Lawyer.getOne(
+					mod_login.getUserId(),
+					input.value
+				)(doc => {
+					mod_loading.hide();
+					callback();
+
+					input.value = doc ? doc.name : "";
+
+					if (!doc)
+						vergil(
+							"<div style=color:var(--warning)>" +
+							"That lawyer doesn't exist!" +
+							"</div>",
+							2800
+						);
+				});
+			}
+
+			input.removeAttribute("debounce");
+		});
+	}
 };
 
 spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
@@ -42,7 +189,12 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 				);
 
 			btn.addEventListener("click", event =>
-				mod_lawyer_edit.show(doc)
+				mod_edit_popup.show(
+					"Lawyer",
+					doc,
+					mod_lawyer.callback.rename,
+					mod_lawyer.callback.delete
+				)
 			);
 
 			return doc;
@@ -63,127 +215,7 @@ spook.waitForChildren(_ => mod_relay.waitForDatabase(_ => {
 		}
 	})(mod_lawyer);
 
-
-
-
-	//-- `log_popup_lawyer` --//
-
-	let log_popup_lawyer_config = {
-		debounce: {},
-		tooltip: null,
-		update: null,
-		fn: _ => {
-			if (!log_popup_lawyer_config.update)
-				return;
-
-			if (!log_popup_lawyer.value) {
-				log_popup_lawyer_config.tooltip = drool.tooltip(
-					log_popup_lawyer,
-					mod_lawyer.tooltip_search,
-					8
-				);
-
-				return log_popup_lawyer_config.update([]);
-			}
-
-			let key = log_popup_lawyer.value.toUpperCase();
-
-			if (log_popup_lawyer_config.debounce.hasOwnProperty(key))
-				return;
-
-			log_popup_lawyer_config.debounce[key] = 1;
-
-			if (log_popup_lawyer_config.tooltip)
-				log_popup_lawyer_config.tooltip();
-
-			if (key) {
-				log_popup_lawyer_config.tooltip = drool.tooltip(
-					log_popup_lawyer,
-					mod_lawyer.tooltip_load,
-					8
-				);
-
-				mod_relay.Lawyer.get(
-					mod_login.getUserId(),
-					0,
-					32,
-					key
-				)(docs => {
-					delete log_popup_lawyer_config.debounce[key];
-
-					if (log_popup_lawyer.value.toUpperCase() == key) {
-						log_popup_lawyer_config.tooltip =
-							log_popup_lawyer_config.tooltip();
-
-						log_popup_lawyer_config.update(
-							docs.map(doc => doc.name)
-						);
-					}
-				});
-			}
-		}
-	};
-
-	log_popup_lawyer.addEventListener("focus", _ => {
-		if (log_popup_lawyer.getAttribute("debounce"))
-			return;
-
-		log_popup_lawyer.setAttribute("debounce", 1);
-
-		log_popup_lawyer_config.update = drool.list(
-			log_popup_lawyer,
-			[],
-			(v, i) => {
-				log_popup_lawyer.value = v;
-				log_popup_lawyer.blur();
-
-				return true;
-			}
-		);
-
-		log_popup_lawyer_config.fn();
-	});
-
-	log_popup_lawyer.addEventListener(
-		"input",
-		log_popup_lawyer_config.fn
-	);
-
-	log_popup_lawyer.addEventListener("keydown", event =>
-		(event.keyCode == 13 || event.keyCode == 27) ?
-			log_popup_lawyer.blur() : 0
-	);
-
-	log_popup_lawyer.addEventListener("blur", _ => {
-		if (log_popup_lawyer_config.tooltip)
-			log_popup_lawyer_config.tooltip =
-				log_popup_lawyer_config.tooltip();
-
-		log_popup_lawyer_config.update = null;
-
-		if (log_popup_lawyer.value) {
-			mod_loading.show();
-
-			mod_relay.Lawyer.getOne(
-				mod_login.getUserId(),
-				log_popup_lawyer.value
-			)(doc => {
-				mod_loading.hide();
-
-				log_popup_lawyer.value = doc ? doc.name : "";
-
-				if (!doc)
-					vergil(
-						"<div style=color:var(--warning)>" +
-						"That lawyer doesn't exist!" +
-						"</div>",
-						2800
-					);
-			});
-		}
-
-		log_popup_lawyer.removeAttribute("debounce");
-	});
+	mod_lawyer.setLawyerCallbacks(log_popup_lawyer);
 }));
 
 lawyer_search.addEventListener("input", _ => {

@@ -25,6 +25,7 @@
 	text-align: center;
 	z-index: 999;
 	pointer-events: none;
+	white-space: nowrap;
 }
 	`;
 	document.head.appendChild(v);
@@ -83,13 +84,16 @@ tipper.move = event => {
 		let x = tipper.div.clientWidth,
 			y = tipper.div.clientHeight;
 
-		tipper.div.style.left = Math.min(
-			event.x + 2,
-			innerWidth - tipper.div.clientWidth
+		tipper.div.style.left = (
+			(event.x + x + 2) > innerWidth ?
+				event.x - tipper.div.clientWidth - 8 :
+				event.x + 2
 		) + "px";
-		tipper.div.style.top = Math.max(
-			event.y - tipper.div.clientHeight - 2,
-			0
+
+		tipper.div.style.top = (
+			(event.y - tipper.div.clientHeight - 2) < 0 ?
+				event.y + 28 :
+				event.y - tipper.div.clientHeight - 2
 		) + "px";
 	}
 };

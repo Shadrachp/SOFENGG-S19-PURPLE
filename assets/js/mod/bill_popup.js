@@ -43,7 +43,7 @@ const mod_bill_popup = {
 		if (!casematter)
 			return vergil(
 				"<div style=color:var(--warning)>" +
-				"You need to create a case matter first!</div>",
+				"You need to create a <b>case matter</b> first!</div>",
 				2600
 			);
 
@@ -245,18 +245,21 @@ const mod_bill_popup = {
 
 						target.date_from = target.date_to = null;
 
-						for (let i = 0; i < docs.length; i++) {
-							if (docs[i].include)
-								target.date_to = new Date(docs[i].date)
+						for (let i = 0;
+							i < docs.length &&
+							(!target.date_from || !target.date_to);
+							i++) {
+							let to = docs[i];
+							let from = docs[docs.length - i - 1];
+
+							if (!target.date_to && to.include)
+								target.date_to = new Date(to.date)
 									.toLocaleDateString();
 
-							if (docs[docs.length - i - 1].include)
-								target.date_from = new Date(
-									docs[docs.length - i - 1].date
-									).toLocaleDateString();
-
-							if (target.date_from && target.date_to)
-								break;
+							if (!target.date_from &&
+								docs[docs.length - i - 1].include)
+								target.date_from = new Date(from.date)
+									.toLocaleDateString();
 						}
 
 						bill_popup_date.innerHTML =

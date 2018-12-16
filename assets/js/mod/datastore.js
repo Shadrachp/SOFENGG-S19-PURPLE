@@ -81,10 +81,11 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 
 	let dump_add = (doc, sort) => {
 		let key = callbacks.key(doc);
-		let i;
 
 		// Try to sort the list if needed.
 		if ((sort == null || sort) && dump.length) {
+			let i;
+
 			for (i = 0;
 				i < dump.length &&
 				callbacks.sort(list[dump[i]], doc);
@@ -204,11 +205,10 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 
 	return mod => {
 		mod.new = (doc, sort) => {
-			let key = callbacks.key(doc);
 			let data = callbacks.new(doc, dump_add(doc));
 
 			if (data)
-				list[key] = data;
+				list[callbacks.key(doc)] = data;
 
 			return data;
 		};
@@ -219,9 +219,14 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 
 			if (callbacks.remove(list[key]))
 				delete list[key];
+
+			return mod;
 		};
 
 		mod.move = (key_old, key_new) => {
+			if (key_old == key_new)
+				return;
+
 			dump.splice(dump.indexOf(key_old), 1);
 
 			list[key_new] = list[key_old];
@@ -229,6 +234,8 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 			delete list[key_old];
 
 			callbacks.move(list[key_new], dump_add(list[key_new]));
+
+			return mod;
 		};
 
 		mod.flush = _ => {
@@ -243,6 +250,8 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 			dump = [];
 			list = {};
 			skip = 0;
+
+			return mod;
 		};
 
 		mod.get = key => list.hasOwnProperty(key) ? list[key] : null;
@@ -270,6 +279,8 @@ mod_datastore.init = (space, limit, buffer, callbacks) => {
 					init_id = null;
 				}
 			});
+
+			return mod;
 		};
 
 		space.addEventListener("scroll", event => scroll());

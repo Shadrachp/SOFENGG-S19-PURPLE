@@ -26,7 +26,7 @@ const mod_edit_popup = {
 			"</label>",
 		delete_success:
 			"<label style=color:var(--success)>" +
-			"Client successfully deleted." +
+			"Successfully deleted." +
 			"</label>",
 		delete_fail:
 			"<label style=color:var(--warning)>" +
